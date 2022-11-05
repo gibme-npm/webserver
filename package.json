@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/WebServer.js",
   "types": "dist/WebServer.d.ts",
@@ -35,6 +35,8 @@
   },
   "dependencies": {
     "@gibme/logger": "^1.0.0",
+    "@types/compression": "^1.7.2",
+    "@types/express": "^4.17.14",
     "compression": "^1.7.4",
     "devcert": "^1.2.2",
     "dotenv": "^16.0.3",
@@ -42,8 +44,6 @@
     "helmet": "^6.0.0"
   },
   "devDependencies": {
-    "@types/compression": "^1.7.2",
-    "@types/express": "^4.17.14",
     "@types/mocha": "^10.0.0",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.42.0",
