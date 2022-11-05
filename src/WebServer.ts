@@ -48,8 +48,7 @@ export default class WebServer {
                 key: _options.sslPrivateKey,
                 cert: _options.sslCertificate
             }, app)
-            : http.createServer(app))
-            .on('error', error => app.emit('error', error));
+            : http.createServer(app));
 
         if (_options.recommendedHeaders) {
             app.use((request, response, next) => {
@@ -160,6 +159,8 @@ export default class WebServer {
 
                 server.listen(_options.bindPort, _options.bindHost, _options.backlog, () => {
                     server.removeAllListeners('error');
+
+                    server.on('error', error => app.emit('error', error));
 
                     return resolve();
                 });
