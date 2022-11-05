@@ -1,0 +1,62 @@
+{
+  "name": "@gibme/webserver",
+  "version": "1.0.0",
+  "description": "A simple express.js webserver wrapper with extra magic built in",
+  "main": "dist/WebServer.js",
+  "types": "dist/WebServer.d.ts",
+  "files": [
+    "dist/*"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "./node_modules/.bin/tsc",
+    "test": "yarn test:style && yarn test:mocha",
+    "test:style": "yarn style",
+    "test:mocha": "./node_modules/.bin/mocha --timeout 60000 --require ts-node/register test/test.ts",
+    "style": "./node_modules/.bin/eslint src/**/*.ts test/**/*.ts",
+    "fix-style": "./node_modules/.bin/eslint --fix src/**/*.ts test/**/*.ts",
+    "fix:style": "yarn fix-style",
+    "prepublishOnly": "yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gibme-npm/webserver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gibme-npm/webserver/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "engineStrict": true,
+  "author": {
+    "name": "Brandon Lehmann",
+    "email": "brandonlehmann@gmail.com"
+  },
+  "dependencies": {
+    "@gibme/logger": "^1.0.0",
+    "compression": "^1.7.4",
+    "devcert": "^1.2.2",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.2",
+    "@types/express": "^4.17.14",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
+    "cross-fetch": "^3.1.5",
+    "eslint": "^8.26.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^10.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}
