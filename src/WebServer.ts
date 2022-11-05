@@ -120,7 +120,7 @@ export default class WebServer {
                     return reject(error);
                 }
 
-                return count;
+                return resolve(count);
             });
         });
 
