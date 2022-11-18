@@ -14,6 +14,7 @@ import * as https from 'https';
 import * as http from 'http';
 import * as serveStatic from 'serve-static';
 import * as path from 'path';
+import ExpressWS from 'express-ws';
 import Logger from '@gibme/logger';
 
 export {
@@ -49,6 +50,16 @@ export default class WebServer {
                 cert: _options.sslCertificate
             }, app)
             : http.createServer(app));
+
+        const wsInstance = ExpressWS(app, server, {
+            wsOptions: _options.websocketsOptions
+        });
+
+        (app as any).applyTo = wsInstance.applyTo;
+
+        (app as any).getWss = wsInstance.getWss;
+
+        (app as any).ws = wsInstance.app.ws;
 
         if (_options.recommendedHeaders) {
             app.use((request, response, next) => {
