@@ -1,30 +1,48 @@
-// Copyright (c) 2018-2022, Brandon Lehmann
+// Copyright (c) 2018-2022, Brandon Lehmann <brandonlehmann@gmail.com>
 //
-// Please see the included LICENSE file for more information.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 import Express from 'express';
 import Helmet from 'helmet';
 import Compression from 'compression';
 import {
+    ExpressWS,
+    http,
+    https,
+    serveStatic,
     WebApplication,
-    WebApplicationOptions
+    WebApplicationOptions,
+    WebSocketRequestHandler
 } from './Types';
 import { mergeWebApplicationDefaults, RecommendedHeaders } from './Helpers';
-import * as https from 'https';
-import * as http from 'http';
-import * as serveStatic from 'serve-static';
 import * as path from 'path';
-import ExpressWS from 'express-ws';
 import Logger from '@gibme/logger';
 
 export {
     Express,
     WebApplication,
     WebApplicationOptions,
-    Logger
+    Logger,
+    WebSocketRequestHandler
 };
 
-export default class WebServer {
+export default abstract class WebServer {
     /**
      * Constructs a new instance of a web server application that
      * utilizes the express framework. This method makes it very
@@ -38,7 +56,7 @@ export default class WebServer {
      * @param options
      */
     public static async create (
-        options?: Partial<WebApplicationOptions>
+        options: Partial<WebApplicationOptions> = {}
     ): Promise<WebApplication> {
         const _options = await mergeWebApplicationDefaults(options);
 
@@ -82,6 +100,7 @@ export default class WebServer {
         app.use(Express.json());
         app.use(Express.urlencoded({ extended: true }));
         app.use(Express.text());
+        app.use(Express.raw());
 
         app.use((request, response, next) => {
             const ip = request.header('x-forwarded-for') ||
@@ -199,3 +218,5 @@ export default class WebServer {
         return app as any;
     }
 }
+
+export { WebServer };
