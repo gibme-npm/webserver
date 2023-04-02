@@ -79,9 +79,29 @@ export default abstract class WebServer {
 
         (app as any).ws = wsInstance.app.ws;
 
-        if (_options.recommendedHeaders) {
+        app.use((request, response, next) => {
+            response.removeHeader('x-powered-by');
+
+            return next();
+        });
+
+        // Set the CORS header if set in the options
+        if (_options.corsDomain.length !== 0) {
             app.use((request, response, next) => {
-                const headers = RecommendedHeaders(_options);
+                response.header('Access-Control-Allow-Origin', _options.corsDomain.trim());
+                response.header('X-Requested-With', '*');
+                response.header('Access-Control-Allow-Headers', '*');
+                response.header('Access-Control-Allow-Methods', '*');
+
+                return next();
+            });
+        }
+
+        if (_options.recommendedHeaders) {
+            app.use(Helmet(_options.helmet));
+
+            app.use((request, response, next) => {
+                const headers = RecommendedHeaders();
 
                 for (const [key, value] of headers) {
                     response.header(key, value);
@@ -90,8 +110,6 @@ export default abstract class WebServer {
                 return next();
             });
         }
-
-        app.use(Helmet(_options.helmet));
 
         if (_options.compression) {
             app.use(Compression());

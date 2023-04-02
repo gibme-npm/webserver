@@ -118,13 +118,10 @@ export const mergeWebApplicationDefaults = async (
 /**
  * Currently recommended headers to return with responses
  *
- * @param options
  * @constructor
  */
-export const RecommendedHeaders = (options: WebApplicationOptions): Map<string, string> =>
+export const RecommendedHeaders = (): Map<string, string> =>
     new Map<string, string>([
-        ['X-Requested-With', '*'],
-        ['Access-Control-Allow-Origin', options.corsDomain],
         ['Access-Control-Allow-Headers', [
             'Origin',
             'X-Requested-With',
