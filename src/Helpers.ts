@@ -29,11 +29,18 @@ dotenv.config();
 
 /** @ignore */
 const processBoolean = (envVar: string, default_value: boolean): boolean => {
-    const variable = process.env[envVar];
+    const variable = (process.env[envVar] || '').toLowerCase();
 
-    return typeof variable !== 'undefined'
-        ? variable === 'true' || variable === '1'
-        : default_value;
+    switch (variable) {
+        case '1':
+        case 'true':
+            return true;
+        case '0':
+        case 'false':
+            return false;
+        default:
+            return default_value;
+    }
 };
 
 /**
@@ -46,11 +53,11 @@ export const mergeWebApplicationDefaults = async (
     options: Partial<WebApplicationOptions> = {}
 ): Promise<WebApplicationOptions> => {
     options.helmet ||= {};
-    options.bindHost ||= process.env.BIND_HOST || '0.0.0.0';
-    options.backlog ||= parseInt(process.env.BACKLOG || '511');
+    options.bindHost ||= process.env.BIND_HOST ?? '0.0.0.0';
+    options.backlog ||= parseInt(process.env.BACKLOG ?? '511');
     options.recommendedHeaders ??= processBoolean('USE_RECOMMENDED_HEADERS', true);
     options.compression ??= processBoolean('USE_COMPRESSION', true);
-    options.corsDomain ||= process.env.CORS_DOMAIN || '*';
+    options.corsDomain ||= process.env.CORS_DOMAIN ?? '*';
     options.ssl ??= processBoolean('USE_SSL', false);
     options.bindPort ||=
         parseInt(process.env.BIND_PORT || options.ssl ? '443' : '80');
