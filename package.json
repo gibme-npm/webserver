@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/WebServer.js",
   "types": "dist/WebServer.d.ts",
@@ -37,7 +37,7 @@
     "email": "brandonlehmann@gmail.com"
   },
   "dependencies": {
-    "@gibme/logger": "^1.0.2",
+    "@gibme/logger": "^1.0.3",
     "@types/compression": "^1.7.2",
     "@types/express": "^4.17.14",
     "@types/express-ws": "^3.0.1",
