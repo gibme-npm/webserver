@@ -74,7 +74,7 @@ describe('Unit Tests', async () => {
         it('Simple Check', async () => {
             const controller = new AbortController();
 
-            const timeout = setTimeout(controller.abort, 5_000);
+            const timeout = setTimeout(() => controller.abort(), 5_000);
 
             const response = await fetch(app.url, {
                 signal: controller.signal as any
