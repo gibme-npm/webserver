@@ -29,6 +29,7 @@ import { HelmetOptions } from 'helmet';
 import ExpressWS, { RouterLike } from 'express-ws';
 import WebSocket, { ServerOptions } from 'ws';
 import Application = Express.Application;
+import { Connection } from 'cloudflared';
 
 export { http, https, serveStatic, ExpressWS };
 
@@ -118,6 +119,10 @@ export interface WebApplicationOptions {
      * WebSocket server options
      */
     websocketsOptions?: ServerOptions;
+    /**
+     * Auto start cloudflared?
+     */
+    autoStartTunnel: boolean;
 }
 
 /**
@@ -131,19 +136,27 @@ interface ROWebApplicationProperties {
     /**
      * The host address that we are to bind to
      */
-    bindHost: string;
+    bindHost: Readonly<string>;
     /**
      * The port that we are to bind to
      */
-    bindPort: number;
+    bindPort: Readonly<number>;
     /**
      * The underlying HTTP/S server
      */
     server: http.Server | https.Server;
     /**
-     * Wheter SSL is enabled
+     * If SSL is enabled
      */
-    ssl: boolean;
+    ssl: Readonly<boolean>;
+    /**
+     * The local server URL
+     */
+    localUrl: Readonly<string>;
+    /**
+     * The common server URL
+     */
+    url: Readonly<string>;
 }
 
 /**
@@ -216,4 +229,20 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
      * @param middlewares
      */
     ws: (route: core.PathParams, ...middlewares: WebSocketRequestHandler[]) => void;
+    /**
+     * Starts a temporary cloudflared tunnel to cloudflare
+     */
+    tunnelStart: (maxRetries?: number) => Promise<void>;
+    /**
+     * The cloudflared tunnel url
+     */
+    tunnelUrl?: Readonly<string>;
+    /**
+     * The cloudflared tunnel connections
+     */
+    tunnelConnections?: Readonly<Connection[]>;
+    /**
+     * Stops the cloudflared tunnel
+     */
+    tunnelStop: () => Promise<void>;
 }

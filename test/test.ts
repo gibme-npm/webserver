@@ -19,65 +19,102 @@
 // SOFTWARE.
 
 import { describe, it, after, before } from 'mocha';
-import WebServer, { WebApplication } from '../src/WebServer';
+import WebServer from '../src/WebServer';
 import fetch from 'cross-fetch';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import assert from 'assert';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import WebSocket from 'ws';
+import AbortController from 'abort-controller';
 
-describe('Webserver Server Tests', async () => {
-    let app: WebApplication;
+describe('Unit Tests', async () => {
+    const app = WebServer.create({
+        bindPort: 12345
+    });
 
-    let client: WebSocket.WebSocket;
+    app.get('/', (request, response) => {
+        return response.json({ success: true });
+    });
+
+    app.ws('/wss', (socket) => {
+        socket.on('message', msg => {
+            socket.send(msg);
+        });
+    });
 
     before(async () => {
-        app = await WebServer.create({
-            bindPort: 12345
-        });
-
-        app.get('/', (request, response) => {
-            return response.json({ success: true });
-        });
-
-        app.ws('/wss', (socket) => {
-            socket.on('message', msg => {
-                socket.send(msg);
-            });
-        });
-
         await app.start();
-
-        client = new WebSocket('http://127.0.0.1:12345/wss');
     });
 
     after(async () => {
         await app.stop();
     });
 
-    it('Simple HTTP Test', async () => {
-        const response = await fetch('http://127.0.0.1:12345/');
+    describe('Cloudflared', async () => {
+        it('Start Tunnel', async function () {
+            try {
+                await app.tunnelStart();
+            } catch {
+                await app.tunnelStop();
 
-        assert(response.ok);
+                this.skip();
+            }
+        });
 
-        const json: {success: boolean} = await response.json();
-
-        assert(json.success);
+        it('Using Tunnel?', async function () {
+            if (!app.tunnelUrl) {
+                this.skip();
+            }
+        });
     });
 
-    it('Simple WebSocket Test', async () => {
-        return new Promise((resolve, reject) => {
-            const message = 'test';
+    describe('HTTP', async () => {
+        it('Simple Check', async () => {
+            const controller = new AbortController();
 
-            client.once('message', msg => {
-                client.close();
+            const timeout = setTimeout(controller.abort, 5_000);
 
-                if (msg.toString() === message) {
-                    return resolve();
-                } else {
-                    return reject(new Error('Mismatched payload'));
-                }
+            const response = await fetch(app.url, {
+                signal: controller.signal as any
             });
 
-            client.send(message);
+            clearTimeout(timeout);
+
+            assert(response.ok);
+
+            const json: {success: boolean} = await response.json();
+
+            assert(json.success);
+        });
+    });
+
+    describe('WebSockets', async () => {
+        it('Simple Test', async () => {
+            return new Promise((resolve, reject) => {
+                const client = new WebSocket(`${app.url}/wss`);
+
+                const message = 'test';
+
+                client.once('error', error => {
+                    return reject(error);
+                });
+
+                client.once('message', msg => {
+                    client.close();
+
+                    if (msg.toString() === message) {
+                        return resolve();
+                    } else {
+                        return reject(new Error('Mismatched payload'));
+                    }
+                });
+
+                client.once('open', () => {
+                    client.send(message);
+                });
+            });
         });
     });
 });

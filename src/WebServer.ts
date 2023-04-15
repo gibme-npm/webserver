@@ -30,9 +30,10 @@ import {
     WebApplicationOptions,
     WebSocketRequestHandler
 } from './Types';
-import { mergeWebApplicationDefaults, RecommendedHeaders } from './Helpers';
+import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions } from './Helpers';
 import * as path from 'path';
 import Logger from '@gibme/logger';
+import startCloudflaredTunnel from './cloudflared';
 
 export {
     Express,
@@ -55,10 +56,10 @@ export default abstract class WebServer {
      *
      * @param options
      */
-    public static async create (
+    public static create (
         options: Partial<WebApplicationOptions> = {}
-    ): Promise<WebApplication> {
-        const _options = await mergeWebApplicationDefaults(options);
+    ): WebApplication {
+        let _options = mergeWebApplicationDefaults(options);
 
         const app = Express();
 
@@ -155,10 +156,14 @@ export default abstract class WebServer {
             return next();
         });
 
-        (app as any).appOptions = _options;
         (app as any).bindHost = _options.bindHost;
         (app as any).bindPort = _options.bindPort;
         (app as any).ssl = _options.ssl;
+        (app as any).localUrl = [
+            `http${_options.ssl ? 's' : ''}://`,
+            _options.bindHost === '0.0.0.0' ? '127.0.0.1' : _options.bindHost,
+            `:${_options.bindPort}`
+        ].join('');
 
         (app as any).address = () => server.address();
 
@@ -187,7 +192,34 @@ export default abstract class WebServer {
             server.maxConnections = maximum;
         };
 
+        (app as any).tunnelStop = async () => { return undefined; };
+
+        (app as any).tunnelStart = async (maxRetries = 10): Promise<void> => {
+            const { url, connections, child, stop } =
+                await startCloudflaredTunnel((app as any).localUrl, maxRetries);
+
+            (app as any).tunnelUrl = (app as any).url = url;
+
+            (app as any).tunnelConnections = connections;
+
+            (app as any).tunnelStop = async () => {
+                try {
+                    await stop();
+                } catch {} finally {
+                    (app as any).url = (app as any).localUrl;
+                    delete (app as any).tunnelUrl;
+                    delete (app as any).tunnelConnections;
+                    (app as any).tunnelStop = async () => { return undefined; };
+                }
+            };
+
+            child.on('error', error => app.emit('error', error));
+            child.on('exit', code => app.emit('tunnelClosed', code));
+        };
+
         (app as any).start = async (): Promise<void> => {
+            (app as any).appOptions = _options = await updateSSLOptions(_options);
+
             if (_options.autoHandleOptions) {
                 app.options('*', (request, response) => {
                     return response.sendStatus(200).send();
@@ -200,7 +232,7 @@ export default abstract class WebServer {
                 });
             }
 
-            return new Promise((resolve, reject) => {
+            const start = async (): Promise<void> => new Promise((resolve, reject) => {
                 server.once('error', error => {
                     return reject(error);
                 });
@@ -213,25 +245,37 @@ export default abstract class WebServer {
                     return resolve();
                 });
             });
+
+            await start();
+
+            if (_options.autoStartTunnel) {
+                await (app as any).tunnelStart();
+            }
         };
 
-        (app as any).stop = async (): Promise<void> => new Promise((resolve, reject) => {
-            if (!server.listening) {
-                return resolve();
-            }
+        (app as any).stop = async (): Promise<void> => {
+            await (app as any).tunnelStop();
 
-            server.close(error => {
-                if (error) {
-                    return reject(error);
+            return new Promise((resolve, reject) => {
+                if (!server.listening) {
+                    return resolve();
                 }
 
-                return resolve();
+                server.close(error => {
+                    if (error) {
+                        return reject(error);
+                    }
+
+                    return resolve();
+                });
             });
-        });
+        };
 
         (app as any).unref = () => server.unref();
 
         (app as any).server = server;
+
+        (app as any).appOptions = _options;
 
         return app as any;
     }

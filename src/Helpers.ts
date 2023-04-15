@@ -49,9 +49,9 @@ const processBoolean = (envVar: string, default_value: boolean): boolean => {
  * @param options
  * @ignore
  */
-export const mergeWebApplicationDefaults = async (
+export const mergeWebApplicationDefaults = (
     options: Partial<WebApplicationOptions> = {}
-): Promise<WebApplicationOptions> => {
+): WebApplicationOptions => {
     options.helmet ||= {};
     options.bindHost ||= process.env.BIND_HOST ?? '0.0.0.0';
     options.backlog ||= parseInt(process.env.BACKLOG ?? '511');
@@ -66,6 +66,7 @@ export const mergeWebApplicationDefaults = async (
         : processBoolean('REQUEST_LOGGING', false);
     options.autoHandle404 ??= processBoolean('AUTO_HANDLE_404', true);
     options.autoHandleOptions ??= processBoolean('AUTO_HANDLE_OPTIONS', true);
+    options.autoStartTunnel ??= false;
 
     {
         const hostnames: string[] = options.sslHostnames
@@ -93,7 +94,22 @@ export const mergeWebApplicationDefaults = async (
         options.sslCertificate = readFileSync(path.resolve(options.sslCertificate));
     }
 
-    if (options.ssl && (!options.sslPrivateKey || !options.sslCertificate)) {
+    return options as WebApplicationOptions;
+};
+
+/**
+ * Updates the SSL options at for a devcert
+ *
+ * @param options
+ */
+export const updateSSLOptions = async (
+    options: Partial<WebApplicationOptions>
+): Promise<WebApplicationOptions> => {
+    if (options.ssl && options.sslHostnames && (!options.sslPrivateKey || !options.sslCertificate)) {
+        if (!Array.isArray(options.sslHostnames)) {
+            options.sslHostnames = [options.sslHostnames];
+        }
+
         if (options.ssl === 'devcert') {
             console.warn('Generating certificates for: %s',
                 options.sslHostnames.join(','));
