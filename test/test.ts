@@ -19,15 +19,14 @@
 // SOFTWARE.
 
 import { describe, it, after, before } from 'mocha';
+import fetch from '@gibme/fetch';
 import WebServer from '../src/WebServer';
-import fetch from 'cross-fetch';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import assert from 'assert';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import WebSocket from 'ws';
-import AbortController from 'abort-controller';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
@@ -72,15 +71,9 @@ describe('Unit Tests', async () => {
 
     describe('HTTP', async () => {
         it('Simple Check', async () => {
-            const controller = new AbortController();
-
-            const timeout = setTimeout(() => controller.abort(), 5_000);
-
             const response = await fetch(app.url, {
-                signal: controller.signal as any
+                timeout: 5_000
             });
-
-            clearTimeout(timeout);
 
             assert(response.ok);
 
