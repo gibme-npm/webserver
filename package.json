@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/WebServer.js",
   "types": "dist/WebServer.d.ts",

@@ -161,7 +161,7 @@ export const RecommendedHeaders = (): Map<string, string> =>
             'public'
         ].join(', ')],
         ['Referrer-Policy', 'no-referrer'],
-        ['Content-Security-Policy', 'default-src =\'self\''],
+        ['Content-Security-Policy', 'default-src \'self\''],
         ['Feature-Policy', [
             'geolocation none',
             'notifications none',
