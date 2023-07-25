@@ -56,6 +56,7 @@ export const mergeWebApplicationDefaults = (
     options.bindHost ||= process.env.BIND_HOST ?? '0.0.0.0';
     options.backlog ||= parseInt(process.env.BACKLOG ?? '511');
     options.recommendedHeaders ??= processBoolean('USE_RECOMMENDED_HEADERS', true);
+    options.enableContentSecurityPolicyHeader ??= processBoolean('ENABLE_CSP_HEADER', false);
     options.compression ??= processBoolean('USE_COMPRESSION', true);
     options.corsDomain ||= process.env.CORS_DOMAIN ?? '*';
     options.ssl ??= processBoolean('USE_SSL', false);
@@ -132,6 +133,15 @@ export const updateSSLOptions = async (
 };
 
 /**
+ * Sets the Content-Security Policy header to the specified value
+ * @constructor
+ */
+export const ContentSecurityHeader = (): Map<string, string> =>
+    new Map<string, string>([
+        ['Content-Security-Policy', 'default-src \'self\'']
+    ]);
+
+/**
  * Currently recommended headers to return with responses
  *
  * @constructor
@@ -161,7 +171,6 @@ export const RecommendedHeaders = (): Map<string, string> =>
             'public'
         ].join(', ')],
         ['Referrer-Policy', 'no-referrer'],
-        ['Content-Security-Policy', 'default-src \'self\''],
         ['Feature-Policy', [
             'geolocation none',
             'notifications none',

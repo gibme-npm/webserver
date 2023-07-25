@@ -30,7 +30,7 @@ import {
     WebApplicationOptions,
     WebSocketRequestHandler
 } from './Types';
-import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions } from './Helpers';
+import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, ContentSecurityHeader } from './Helpers';
 import * as path from 'path';
 import Logger from '@gibme/logger';
 import startCloudflaredTunnel from './cloudflared';
@@ -103,6 +103,18 @@ export default abstract class WebServer {
 
             app.use((request, response, next) => {
                 const headers = RecommendedHeaders();
+
+                for (const [key, value] of headers) {
+                    response.header(key, value);
+                }
+
+                return next();
+            });
+        }
+
+        if (_options.enableContentSecurityPolicyHeader) {
+            app.use((request, response, next) => {
+                const headers = ContentSecurityHeader();
 
                 for (const [key, value] of headers) {
                     response.header(key, value);

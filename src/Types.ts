@@ -73,6 +73,11 @@ export interface WebApplicationOptions {
      */
     corsDomain: string;
     /**
+     * Whether we enable the content security policy header by default
+     * @default false
+     */
+    enableContentSecurityPolicyHeader?: boolean;
+    /**
      * Helmet module options
      */
     helmet?: HelmetOptions;
@@ -81,7 +86,7 @@ export interface WebApplicationOptions {
      * with every request
      * @default true
      */
-    recommendedHeaders: boolean;
+    recommendedHeaders?: boolean;
     /**
      * Whether we should log requests to file/console
      * @default false
