@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>WebApplication | @gibme/webserver</title><meta name="description" content="Documentation for @gibme/webserver"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script async src="../assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>WebApplication | @gibme/webserver</title><meta name="description" content="Documentation for @gibme/webserver"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -9,22 +9,27 @@
 <li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">@gibme/webserver</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
-<div class="col-8 col-content">
+<div class="col-content">
 <div class="tsd-page-title">
 <ul class="tsd-breadcrumb">
 <li><a href="../modules.html">@gibme/webserver</a></li>
 <li><a href="WebApplication.html">WebApplication</a></li></ul>
 <h1>Interface WebApplication</h1></div>
+<section class="tsd-panel tsd-comment">
+<div class="tsd-comment tsd-typography"><p>Extends an Express.Application
+see <a href="https://expressjs.com/en/4x/api.html#app">https://expressjs.com/en/4x/api.html#app</a></p>
+</div>
+<div class="tsd-comment tsd-typography"></div></section>
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
-<li><span class="tsd-signature-type">Application</span></li>
-<li><span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ROWebApplicationProperties</span><span class="tsd-signature-symbol">&gt;</span>
+<li><span class="tsd-signature-type ">Application</span></li>
+<li><span class="tsd-signature-type ">Readonly</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">ROWebApplicationProperties</span><span class="tsd-signature-symbol">&gt;</span>
 <ul class="tsd-hierarchy">
 <li><span class="target">WebApplication</span></li></ul></li></ul></section>
 <section class="tsd-panel">
-<ul class="tsd-signatures tsd-kind-interface">
-<li class="tsd-signature tsd-anchor-link" id="WebApplication">Web<wbr/>Application<span class="tsd-signature-symbol">(</span>req<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, res<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><a href="#WebApplication" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature tsd-anchor-link" id="WebApplication"><span class="tsd-kind-call-signature">Web<wbr/>Application</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">req</span>, <span class="tsd-kind-parameter">res</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><a href="#WebApplication" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><g stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round" id="icon-anchor"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5"></path></g></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Express instance itself is a request handler, which could be invoked without
 third argument.</p>
@@ -33,24 +38,22 @@ third argument.</p>
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>req: <span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<h5><span class="tsd-kind-parameter">req</span>: <span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
 <li>
-<h5>res: <span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4></li>
-<li class="tsd-signature tsd-anchor-link" id="WebApplication-1">Web<wbr/>Application<span class="tsd-signature-symbol">(</span>req<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span>, res<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span>, next<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">NextFunction</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#WebApplication-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<h5><span class="tsd-kind-parameter">res</span>: <span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">any</span></h4>
+<div class="tsd-comment tsd-typography"></div></li>
+<li class="tsd-signature tsd-anchor-link" id="WebApplication-1"><span class="tsd-kind-call-signature">Web<wbr/>Application</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">req</span>, <span class="tsd-kind-parameter">res</span>, <span class="tsd-kind-parameter">next</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span><a href="#WebApplication-1" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Extends an Express.Application
-see <a href="https://expressjs.com/en/4x/api.html#app">https://expressjs.com/en/4x/api.html#app</a></p>
-</div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>req: <span class="tsd-signature-type">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<h5><span class="tsd-kind-parameter">req</span>: <span class="tsd-signature-type ">Request</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">ParamsDictionary</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">ParsedQs</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
 <li>
-<h5>res: <span class="tsd-signature-type">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
+<h5><span class="tsd-kind-parameter">res</span>: <span class="tsd-signature-type ">Response</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type ">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h5></li>
 <li>
-<h5>next: <span class="tsd-signature-type">NextFunction</span></h5></li></ul></div>
+<h5><span class="tsd-kind-parameter">next</span>: <span class="tsd-signature-type ">NextFunction</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></section>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
@@ -59,60 +62,62 @@ see <a href="https://expressjs.com/en/4x/api.html#app">https://expressjs.com/en/
 <div class="tsd-accordion-details">
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
-<div class="tsd-index-list"><a href="WebApplication.html#address" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-1024-path"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)" id="icon-1024-text"></path></svg><span>address</span></a>
-<a href="WebApplication.html#appOptions" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>app<wbr/>Options</span></a>
-<a href="WebApplication.html#applyTo" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>apply<wbr/>To?</span></a>
-<a href="WebApplication.html#bindHost" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>bind<wbr/>Host</span></a>
-<a href="WebApplication.html#bindPort" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>bind<wbr/>Port</span></a>
-<a href="WebApplication.html#getConnections" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>get<wbr/>Connections</span></a>
-<a href="WebApplication.html#getMaxConnections" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>get<wbr/>Max<wbr/>Connections</span></a>
-<a href="WebApplication.html#getWss" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>get<wbr/>Wss?</span></a>
-<a href="WebApplication.html#localUrl" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>local<wbr/>Url</span></a>
-<a href="WebApplication.html#ref" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>ref</span></a>
-<a href="WebApplication.html#serveStatic" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>serve<wbr/>Static</span></a>
-<a href="WebApplication.html#server" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>server</span></a>
-<a href="WebApplication.html#setMaxConnections" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>set<wbr/>Max<wbr/>Connections</span></a>
-<a href="WebApplication.html#ssl" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>ssl</span></a>
-<a href="WebApplication.html#start" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>start</span></a>
-<a href="WebApplication.html#stop" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>stop</span></a>
-<a href="WebApplication.html#tunnelConnections" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>tunnel<wbr/>Connections?</span></a>
-<a href="WebApplication.html#tunnelStart" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>tunnel<wbr/>Start</span></a>
-<a href="WebApplication.html#tunnelStop" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>tunnel<wbr/>Stop</span></a>
-<a href="WebApplication.html#tunnelUrl" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>tunnel<wbr/>Url?</span></a>
-<a href="WebApplication.html#unref" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>unref</span></a>
-<a href="WebApplication.html#url" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>url</span></a>
-<a href="WebApplication.html#ws" class="tsd-index-link tsd-kind-property tsd-parent-kind-interface"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg><span>ws</span></a>
+<div class="tsd-index-list"><a href="WebApplication.html#address" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-1024"><rect fill="var(--color-icon-background)" stroke="#FF984D" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M9.354 16V7.24H12.174C12.99 7.24 13.638 7.476 14.118 7.948C14.606 8.412 14.85 9.036 14.85 9.82C14.85 10.604 14.606 11.232 14.118 11.704C13.638 12.168 12.99 12.4 12.174 12.4H10.434V16H9.354ZM10.434 11.428H12.174C12.646 11.428 13.022 11.284 13.302 10.996C13.59 10.7 13.734 10.308 13.734 9.82C13.734 9.324 13.59 8.932 13.302 8.644C13.022 8.356 12.646 8.212 12.174 8.212H10.434V11.428Z" fill="var(--color-text)"></path></g></svg><span>address</span></a>
+<a href="WebApplication.html#appOptions" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>app<wbr/>Options</span></a>
+<a href="WebApplication.html#applyTo" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>apply<wbr/>To?</span></a>
+<a href="WebApplication.html#bindHost" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>bind<wbr/>Host</span></a>
+<a href="WebApplication.html#bindPort" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>bind<wbr/>Port</span></a>
+<a href="WebApplication.html#getConnections" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Connections</span></a>
+<a href="WebApplication.html#getMaxConnections" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Max<wbr/>Connections</span></a>
+<a href="WebApplication.html#getWss" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Wss?</span></a>
+<a href="WebApplication.html#localUrl" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>local<wbr/>Url</span></a>
+<a href="WebApplication.html#ref" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ref</span></a>
+<a href="WebApplication.html#serveStatic" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>serve<wbr/>Static</span></a>
+<a href="WebApplication.html#server" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>server</span></a>
+<a href="WebApplication.html#setMaxConnections" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>set<wbr/>Max<wbr/>Connections</span></a>
+<a href="WebApplication.html#ssl" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ssl</span></a>
+<a href="WebApplication.html#start" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>start</span></a>
+<a href="WebApplication.html#stop" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>stop</span></a>
+<a href="WebApplication.html#tunnelConnections" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Connections?</span></a>
+<a href="WebApplication.html#tunnelStart" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Start</span></a>
+<a href="WebApplication.html#tunnelStop" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Stop</span></a>
+<a href="WebApplication.html#tunnelUrl" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Url?</span></a>
+<a href="WebApplication.html#unref" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>unref</span></a>
+<a href="WebApplication.html#url" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>url</span></a>
+<a href="WebApplication.html#ws" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ws</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="address" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>address</span><a href="#address" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">address<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AddressInfo</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="address" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>address</span><a href="#address" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">address</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">AddressInfo</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="address.__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AddressInfo</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="address.__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">AddressInfo</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>The local address of the server</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">AddressInfo</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="appOptions" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>app<wbr/>Options</span><a href="#appOptions" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">app<wbr/>Options<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="WebApplicationOptions.html" class="tsd-signature-type" data-tsd-kind="Interface">WebApplicationOptions</a><span class="tsd-signature-symbol">&gt;</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">AddressInfo</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="appOptions" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>app<wbr/>Options</span><a href="#appOptions" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">app<wbr/>Options</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Readonly</span><span class="tsd-signature-symbol">&lt;</span><a href="WebApplicationOptions.html" class="tsd-signature-type tsd-kind-interface">WebApplicationOptions</a><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>The options used to create the application</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.appOptions</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="applyTo" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>apply<wbr/>To</span><a href="#applyTo" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">apply<wbr/>To<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>target<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RouterLike</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="applyTo" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>apply<wbr/>To</span><a href="#applyTo" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">apply<wbr/>To</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">target</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="applyTo.__type-2.__type-3"><span class="tsd-signature-symbol">(</span>target<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">RouterLike</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="applyTo.__type-2.__type-3"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">target</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Applies a WebSocket instance to the target</p>
 </div>
@@ -120,88 +125,97 @@ see <a href="https://expressjs.com/en/4x/api.html#app">https://expressjs.com/en/
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>target: <span class="tsd-signature-type">RouterLike</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="bindHost" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>bind<wbr/>Host</span><a href="#bindHost" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">bind<wbr/>Host<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+<h5><span class="tsd-kind-parameter">target</span>: <span class="tsd-signature-type ">RouterLike</span></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="bindHost" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>bind<wbr/>Host</span><a href="#bindHost" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">bind<wbr/>Host</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The host address that we are to bind to</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.bindHost</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="bindPort" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>bind<wbr/>Port</span><a href="#bindPort" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">bind<wbr/>Port<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="bindPort" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>bind<wbr/>Port</span><a href="#bindPort" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">bind<wbr/>Port</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 <div class="tsd-comment tsd-typography"><p>The port that we are to bind to</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.bindPort</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="getConnections" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>get<wbr/>Connections</span><a href="#getConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">get<wbr/>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="getConnections" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Connections</span><a href="#getConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">get<wbr/>Connections</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="getConnections.__type-4.__type-5"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="getConnections.__type-4.__type-5"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Returns the number of connections to the underlying TCP server</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="getMaxConnections" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>get<wbr/>Max<wbr/>Connections</span><a href="#getMaxConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">get<wbr/>Max<wbr/>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="getMaxConnections" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Max<wbr/>Connections</span><a href="#getMaxConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">get<wbr/>Max<wbr/>Connections</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
+<ul class="tsd-signatures">
 <li class="tsd-signature" id="getMaxConnections.__type-6.__type-7"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Retrieves the maximum number of connections that the underlying TCP server will accept</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="getWss" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>get<wbr/>Wss</span><a href="#getWss" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">get<wbr/>Wss<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WebSocket</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="getWss" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>get<wbr/>Wss</span><a href="#getWss" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">get<wbr/>Wss</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">WebSocket</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="getWss.__type-8.__type-9"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WebSocket</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="getWss.__type-8.__type-9"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">WebSocket</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Returns the WebSocket.Server instance attached to the application</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">WebSocket</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="localUrl" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>local<wbr/>Url</span><a href="#localUrl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">local<wbr/>Url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">WebSocket</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="localUrl" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>local<wbr/>Url</span><a href="#localUrl" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">local<wbr/>Url</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The local server URL</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.localUrl</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="ref" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>ref</span><a href="#ref" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">ref<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="ref" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>ref</span><a href="#ref" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">ref</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="ref.__type-10.__type-11"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="ref.__type-10.__type-11"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Opposite of unref(), calling ref() on a previously unrefed server will not let the program exit if it&#39;s
 the only server left (the default behavior). If the server is refed calling ref() again will have no effect.</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="serveStatic" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>serve<wbr/>Static</span><a href="#serveStatic" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">serve<wbr/>Static<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>local_path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ServeStaticOptions</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="serveStatic" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>serve<wbr/>Static</span><a href="#serveStatic" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">serve<wbr/>Static</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">local_path</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="serveStatic.__type-12.__type-13"><span class="tsd-signature-symbol">(</span>local_path<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, options<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">ServeStaticOptions</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="serveStatic.__type-12.__type-13"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">local_path</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Serves a static path via the Express application</p>
 </div>
@@ -209,25 +223,29 @@ the only server left (the default behavior). If the server is refed calling ref(
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>local_path: <span class="tsd-signature-type">string</span></h5></li>
+<h5><span class="tsd-kind-parameter">local_path</span>: <span class="tsd-signature-type">string</span></h5>
+<div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> options: <span class="tsd-signature-type">ServeStaticOptions</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="server" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>server</span><a href="#server" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">server<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">options</span>: <span class="tsd-signature-type ">ServeStaticOptions</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="server" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>server</span><a href="#server" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">server</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>The underlying HTTP/S server</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.server</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="setMaxConnections" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>set<wbr/>Max<wbr/>Connections</span><a href="#setMaxConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">set<wbr/>Max<wbr/>Connections<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>maximum<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="setMaxConnections" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>set<wbr/>Max<wbr/>Connections</span><a href="#setMaxConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">set<wbr/>Max<wbr/>Connections</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">maximum</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="setMaxConnections.__type-14.__type-15"><span class="tsd-signature-symbol">(</span>maximum<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="setMaxConnections.__type-14.__type-15"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">maximum</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Sets the maximum number of connections that the underlying TCP server will accept</p>
 </div>
@@ -235,54 +253,60 @@ the only server left (the default behavior). If the server is refed calling ref(
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>maximum: <span class="tsd-signature-type">number</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="ssl" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>ssl</span><a href="#ssl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">ssl<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Readonly</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
+<h5><span class="tsd-kind-parameter">maximum</span>: <span class="tsd-signature-type">number</span></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="ssl" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>ssl</span><a href="#ssl" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">ssl</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type ">Readonly</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>If SSL is enabled</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.ssl</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="start" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>start</span><a href="#start" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="start" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>start</span><a href="#start" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">start</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="start.__type-16.__type-17"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="start.__type-16.__type-17"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Starts the server</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="stop" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>stop</span><a href="#stop" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">stop<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="stop" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>stop</span><a href="#stop" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">stop</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="stop.__type-18.__type-19"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="stop.__type-18.__type-19"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Stops the server</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="tunnelConnections" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>tunnel<wbr/>Connections</span><a href="#tunnelConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">tunnel<wbr/>Connections<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type">Connection</span><span class="tsd-signature-symbol">[]</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="tunnelConnections" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>tunnel<wbr/>Connections</span><a href="#tunnelConnections" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">tunnel<wbr/>Connections</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-symbol">readonly </span><span class="tsd-signature-type ">Connection</span><span class="tsd-signature-symbol">[]</span></div>
 <div class="tsd-comment tsd-typography"><p>The cloudflared tunnel connections</p>
-</div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="tunnelStart" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>tunnel<wbr/>Start</span><a href="#tunnelStart" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">tunnel<wbr/>Start<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+</div>
+<div class="tsd-comment tsd-typography"></div></section>
+<section class="tsd-panel tsd-member"><a id="tunnelStart" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>tunnel<wbr/>Start</span><a href="#tunnelStart" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">tunnel<wbr/>Start</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">maxRetries</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="tunnelStart.__type-20.__type-21"><span class="tsd-signature-symbol">(</span>maxRetries<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="tunnelStart.__type-20.__type-21"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">maxRetries</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Starts a temporary cloudflared tunnel to cloudflare</p>
 </div>
@@ -290,55 +314,60 @@ the only server left (the default behavior). If the server is refed calling ref(
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> maxRetries: <span class="tsd-signature-type">number</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="tunnelStop" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>tunnel<wbr/>Stop</span><a href="#tunnelStop" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">tunnel<wbr/>Stop<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">maxRetries</span>: <span class="tsd-signature-type">number</span></h5></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="tunnelStop" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>tunnel<wbr/>Stop</span><a href="#tunnelStop" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">tunnel<wbr/>Stop</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="tunnelStop.__type-22.__type-23"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="tunnelStop.__type-22.__type-23"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Stops the cloudflared tunnel</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="tunnelUrl" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>tunnel<wbr/>Url</span><a href="#tunnelUrl" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">tunnel<wbr/>Url<span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member"><a id="tunnelUrl" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>tunnel<wbr/>Url</span><a href="#tunnelUrl" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">tunnel<wbr/>Url</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The cloudflared tunnel url</p>
-</div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="unref" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>unref</span><a href="#unref" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">unref<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
+</div>
+<div class="tsd-comment tsd-typography"></div></section>
+<section class="tsd-panel tsd-member"><a id="unref" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>unref</span><a href="#unref" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">unref</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="unref.__type-24.__type-25"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="unref.__type-24.__type-25"><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Calling unref() on a server will allow the program to exit if this is the only active server in the
 event system. If the server is already unrefed calling unref() again will have no effect.</p>
 </div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a id="url" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>url</span><a href="#url" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">url<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type ">Server</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">IncomingMessage</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">typeof </span><span class="tsd-signature-type ">ServerResponse</span><span class="tsd-signature-symbol">&gt;</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="url" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>url</span><a href="#url" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">url</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>The common server URL</p>
-</div><aside class="tsd-sources">
+</div>
+<div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <p>Inherited from Readonly.url</p></aside></section>
-<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface"><a id="ws" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><span>ws</span><a href="#ws" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
-<div class="tsd-signature">ws<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>route<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PathParams</span>, <span class="tsd-signature-symbol">...</span>middlewares<span class="tsd-signature-symbol">: </span><a href="../types/WebSocketRequestHandler.html" class="tsd-signature-type" data-tsd-kind="Type alias">WebSocketRequestHandler</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
+<section class="tsd-panel tsd-member"><a id="ws" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>ws</span><a href="#ws" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">ws</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">route</span>, <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">middlewares</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
 <div class="tsd-type-declaration">
 <h4>Type declaration</h4>
 <ul class="tsd-parameters">
 <li class="tsd-parameter-signature">
-<ul class="tsd-signatures tsd-kind-type-literal tsd-parent-kind-property">
-<li class="tsd-signature" id="ws.__type-26.__type-27"><span class="tsd-signature-symbol">(</span>route<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">PathParams</span>, <span class="tsd-signature-symbol">...</span>middlewares<span class="tsd-signature-symbol">: </span><a href="../types/WebSocketRequestHandler.html" class="tsd-signature-type" data-tsd-kind="Type alias">WebSocketRequestHandler</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+<ul class="tsd-signatures">
+<li class="tsd-signature" id="ws.__type-26.__type-27"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">route</span>, <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">middlewares</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 <li class="tsd-description">
 <div class="tsd-comment tsd-typography"><p>Creates a WebSocket route in the same kind of format as .get/.post/etc</p>
 </div>
@@ -346,14 +375,18 @@ event system. If the server is already unrefed calling unref() again will have n
 <h4 class="tsd-parameters-title">Parameters</h4>
 <ul class="tsd-parameter-list">
 <li>
-<h5>route: <span class="tsd-signature-type">PathParams</span></h5></li>
+<h5><span class="tsd-kind-parameter">route</span>: <span class="tsd-signature-type ">PathParams</span></h5>
+<div class="tsd-comment tsd-typography"></div></li>
 <li>
-<h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span>middlewares: <a href="../types/WebSocketRequestHandler.html" class="tsd-signature-type" data-tsd-kind="Type alias">WebSocketRequestHandler</a><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
-<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4></li></ul></li></ul></div></section></section></div>
-<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+<h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span><span class="tsd-kind-parameter">middlewares</span>: <a href="../types/WebSocketRequestHandler.html" class="tsd-signature-type tsd-kind-type-alias">WebSocketRequestHandler</a><span class="tsd-signature-symbol">[]</span></h5>
+<div class="tsd-comment tsd-typography"></div></li></ul></div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+<div class="tsd-comment tsd-typography"></div></li></ul></li></ul></div></section></section></div>
+<div class="col-sidebar">
+<div class="page-menu">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
-<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Settings</h3></summary>
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)" id="icon-chevronDown"></path></svg>Settings</h3></summary>
 <div class="tsd-accordion-details">
 <div class="tsd-filter-visibility">
 <h4 class="uppercase">Member Visibility</h4><form>
@@ -361,39 +394,40 @@ event system. If the server is already unrefed calling unref() again will have n
 <li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
 <li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li></ul></form></div>
 <div class="tsd-theme-toggle">
-<h4 class="uppercase">Theme</h4><select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
-<nav class="tsd-navigation primary">
-<details class="tsd-index-accordion" open><summary class="tsd-accordion-summary">
-<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
+<h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<details open class="tsd-index-accordion tsd-page-navigation"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><use href="#icon-chevronDown"></use></svg>On This Page</h3></summary>
 <div class="tsd-accordion-details">
 <ul>
-<li><a href="../modules.html">@gibme/webserver</a>
-<ul></ul></li></ul></div></details></nav>
-<nav class="tsd-navigation secondary menu-sticky">
-<ul>
-<li class="current tsd-kind-interface"><a href="WebApplication.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg><span>Web<wbr/>Application</span></a>
-<ul>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#address" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>address</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#appOptions" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>app<wbr/>Options</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#applyTo" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>apply<wbr/>To?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#bindHost" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>bind<wbr/>Host</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#bindPort" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>bind<wbr/>Port</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#getConnections" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>get<wbr/>Connections</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#getMaxConnections" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>get<wbr/>Max<wbr/>Connections</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#getWss" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>get<wbr/>Wss?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#localUrl" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>local<wbr/>Url</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#ref" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>ref</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#serveStatic" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>serve<wbr/>Static</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#server" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>server</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#setMaxConnections" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>set<wbr/>Max<wbr/>Connections</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#ssl" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>ssl</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#start" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>start</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#stop" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>stop</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#tunnelConnections" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>tunnel<wbr/>Connections?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#tunnelStart" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>tunnel<wbr/>Start</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#tunnelStop" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>tunnel<wbr/>Stop</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#tunnelUrl" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>tunnel<wbr/>Url?</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#unref" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>unref</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="WebApplication.html#url" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>url</a></li>
-<li class="tsd-kind-property tsd-parent-kind-interface"><a href="WebApplication.html#ws" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-1024-path"></use><use href="#icon-1024-text"></use></svg>ws</a></li></ul></li></ul></nav></div></div>
-<div class="overlay"></div><script src="../assets/main.js"></script></body></html>
+<li><a href="#address" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>address</span></a></li>
+<li><a href="#appOptions" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>app<wbr/>Options</span></a></li>
+<li><a href="#applyTo" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>apply<wbr/>To</span></a></li>
+<li><a href="#bindHost" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>bind<wbr/>Host</span></a></li>
+<li><a href="#bindPort" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>bind<wbr/>Port</span></a></li>
+<li><a href="#getConnections" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Connections</span></a></li>
+<li><a href="#getMaxConnections" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Max<wbr/>Connections</span></a></li>
+<li><a href="#getWss" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>get<wbr/>Wss</span></a></li>
+<li><a href="#localUrl" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>local<wbr/>Url</span></a></li>
+<li><a href="#ref" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ref</span></a></li>
+<li><a href="#serveStatic" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>serve<wbr/>Static</span></a></li>
+<li><a href="#server" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>server</span></a></li>
+<li><a href="#setMaxConnections" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>set<wbr/>Max<wbr/>Connections</span></a></li>
+<li><a href="#ssl" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ssl</span></a></li>
+<li><a href="#start" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>start</span></a></li>
+<li><a href="#stop" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>stop</span></a></li>
+<li><a href="#tunnelConnections" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Connections</span></a></li>
+<li><a href="#tunnelStart" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Start</span></a></li>
+<li><a href="#tunnelStop" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Stop</span></a></li>
+<li><a href="#tunnelUrl" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>tunnel<wbr/>Url</span></a></li>
+<li><a href="#unref" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>unref</span></a></li>
+<li><a href="#url" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>url</span></a></li>
+<li><a href="#ws" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>ws</span></a></li></ul></div></details></div>
+<div class="site-menu">
+<nav class="tsd-navigation"><a href="../modules.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-namespace)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.33 16V7.24H10.77L13.446 14.74C13.43 14.54 13.41 14.296 13.386 14.008C13.37 13.712 13.354 13.404 13.338 13.084C13.33 12.756 13.326 12.448 13.326 12.16V7.24H14.37V16H12.93L10.266 8.5C10.282 8.692 10.298 8.936 10.314 9.232C10.33 9.52 10.342 9.828 10.35 10.156C10.366 10.476 10.374 10.784 10.374 11.08V16H9.33Z" fill="var(--color-text)"></path></g></svg><span>@gibme/webserver</span></a>
+<ul class="tsd-small-nested-navigation">
+<li><a href="../modules.html#default"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-8388608"><rect fill="var(--color-icon-background)" stroke="#FF4D82" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12"></rect><path d="M10.354 17V8.24H13.066C13.586 8.24 14.042 8.348 14.434 8.564C14.826 8.772 15.13 9.064 15.346 9.44C15.562 9.816 15.67 10.256 15.67 10.76C15.67 11.352 15.514 11.86 15.202 12.284C14.898 12.708 14.482 13 13.954 13.16L15.79 17H14.518L12.838 13.28H11.434V17H10.354ZM11.434 12.308H13.066C13.514 12.308 13.874 12.168 14.146 11.888C14.418 11.6 14.554 11.224 14.554 10.76C14.554 10.288 14.418 9.912 14.146 9.632C13.874 9.352 13.514 9.212 13.066 9.212H11.434V12.308Z" fill="var(--color-text)"></path></g></svg><span>default</span></a></li>
+<li><a href="../classes/WebServer.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-128"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)"></path></g></svg><span>Web<wbr/>Server</span></a></li>
+<li><a href="WebApplication.html" class="current"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-256"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)"></path></g></svg><span>Web<wbr/>Application</span></a></li>
+<li><a href="WebApplicationOptions.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-256"></use></svg><span>Web<wbr/>Application<wbr/>Options</span></a></li>
+<li><a href="../types/WebSocketRequestHandler.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><g id="icon-4194304"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-type-alias)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)"></path></g></svg><span>Web<wbr/>Socket<wbr/>Request<wbr/>Handler</span></a></li></ul></nav></div></div></div>
+<div class="overlay"></div></body></html>
