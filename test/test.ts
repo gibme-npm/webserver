@@ -27,6 +27,7 @@ import assert from 'assert';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import WebSocket from 'ws';
+import Logger from '@gibme/logger';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
@@ -45,6 +46,9 @@ describe('Unit Tests', async () => {
 
     before(async () => {
         await app.start();
+
+        Logger.info('Local URL: %s', app.localUrl);
+        Logger.info('URL: %s', app.url);
     });
 
     after(async () => {
@@ -55,6 +59,9 @@ describe('Unit Tests', async () => {
         it('Start Tunnel', async function () {
             try {
                 await app.tunnelStart();
+
+                Logger.info('Tunnel URL: %s', app.tunnelUrl);
+                Logger.info('URL: %s', app.url);
             } catch {
                 await app.tunnelStop();
 

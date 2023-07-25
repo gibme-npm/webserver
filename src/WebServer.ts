@@ -164,6 +164,7 @@ export default abstract class WebServer {
             _options.bindHost === '0.0.0.0' ? '127.0.0.1' : _options.bindHost,
             `:${_options.bindPort}`
         ].join('');
+        (app as any).url = (app as any).localUrl;
 
         (app as any).address = () => server.address();
 
