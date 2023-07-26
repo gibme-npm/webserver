@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Express from 'express';
+import Express, { Request, Response } from 'express';
 import Helmet from 'helmet';
 import Compression from 'compression';
 import {
@@ -40,7 +40,9 @@ export {
     WebApplication,
     WebApplicationOptions,
     Logger,
-    WebSocketRequestHandler
+    WebSocketRequestHandler,
+    Request,
+    Response
 };
 
 export default abstract class WebServer {
@@ -80,7 +82,7 @@ export default abstract class WebServer {
 
         (app as any).ws = wsInstance.app.ws;
 
-        app.use((request, response, next) => {
+        app.use((_request, response, next) => {
             response.removeHeader('x-powered-by');
 
             return next();
@@ -88,7 +90,7 @@ export default abstract class WebServer {
 
         // Set the CORS header if set in the options
         if (_options.corsDomain.length !== 0) {
-            app.use((request, response, next) => {
+            app.use((_request, response, next) => {
                 response.header('Access-Control-Allow-Origin', _options.corsDomain.trim());
                 response.header('X-Requested-With', '*');
                 response.header('Access-Control-Allow-Headers', '*');
@@ -101,7 +103,7 @@ export default abstract class WebServer {
         if (_options.recommendedHeaders) {
             app.use(Helmet(_options.helmet));
 
-            app.use((request, response, next) => {
+            app.use((_request, response, next) => {
                 const headers = RecommendedHeaders();
 
                 for (const [key, value] of headers) {
@@ -113,7 +115,7 @@ export default abstract class WebServer {
         }
 
         if (_options.enableContentSecurityPolicyHeader) {
-            app.use((request, response, next) => {
+            app.use((_request, response, next) => {
                 const headers = ContentSecurityHeader();
 
                 for (const [key, value] of headers) {
@@ -133,7 +135,7 @@ export default abstract class WebServer {
         app.use(Express.text());
         app.use(Express.raw());
 
-        app.use((request, response, next) => {
+        app.use((request, _response, next) => {
             const ip = request.header('x-forwarded-for') ||
                 request.header('cf-connecting-ip') ||
                 request.ip;
@@ -234,13 +236,13 @@ export default abstract class WebServer {
             (app as any).appOptions = _options = await updateSSLOptions(_options);
 
             if (_options.autoHandleOptions) {
-                app.options('*', (request, response) => {
+                app.options('*', (_request, response) => {
                     return response.sendStatus(200).send();
                 });
             }
 
             if (_options.autoHandle404) {
-                app.all('*', (request, response) => {
+                app.all('*', (_request, response) => {
                     return response.sendStatus(404).send();
                 });
             }
