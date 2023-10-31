@@ -235,6 +235,10 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
      */
     ws: (route: core.PathParams, ...middlewares: WebSocketRequestHandler[]) => void;
     /**
+     * Installs the cloudflared binary
+     */
+    installCloudflared: () => Promise<void>;
+    /**
      * Starts a temporary cloudflared tunnel to cloudflare
      */
     tunnelStart: (maxRetries?: number) => Promise<void>;
@@ -250,4 +254,8 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
      * Stops the cloudflared tunnel
      */
     tunnelStop: () => Promise<void>;
+    /**
+     * Path to cloudflared binary
+     */
+    cloudflared?: Readonly<string>;
 }

@@ -58,6 +58,14 @@ describe('Unit Tests', async () => {
     describe('Cloudflared', async () => {
         it('Start Tunnel', async function () {
             try {
+                const binary = await app.installCloudflared();
+
+                Logger.warn('Cloudflared: %s', binary);
+            } catch {
+                this.skip();
+            }
+
+            try {
                 await app.tunnelStart();
 
                 Logger.info('Tunnel URL: %s', app.tunnelUrl);

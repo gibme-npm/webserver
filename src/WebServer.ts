@@ -33,7 +33,7 @@ import {
 import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, ContentSecurityHeader } from './Helpers';
 import * as path from 'path';
 import Logger from '@gibme/logger';
-import startCloudflaredTunnel from './cloudflared';
+import startCloudflaredTunnel, { installCloudflared } from './cloudflared';
 
 export {
     Express,
@@ -207,9 +207,13 @@ export default abstract class WebServer {
             server.maxConnections = maximum;
         };
 
+        (app as any).installCloudflared = installCloudflared;
+
         (app as any).tunnelStop = async () => { return undefined; };
 
         (app as any).tunnelStart = async (maxRetries = 10): Promise<void> => {
+            (app as any).cloudflared = await installCloudflared();
+
             const { url, connections, child, stop } =
                 await startCloudflaredTunnel((app as any).localUrl, maxRetries);
 

@@ -18,9 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { tunnel, Connection } from 'cloudflared';
+import { tunnel, Connection, bin as cloudflared, install } from 'cloudflared';
 import { lookup, setServers } from 'dns';
 import { ChildProcess } from 'child_process';
+import { existsSync } from 'fs';
 
 export { Connection };
 
@@ -74,6 +75,14 @@ const waitForDNS = async (
     return waitForDNS(url, ++attempt, maxRetries);
 };
 
+export const installCloudflared = async (): Promise<string> => {
+    if (!existsSync(cloudflared)) {
+        await install(cloudflared);
+    }
+
+    return cloudflared;
+};
+
 /**
  * Starts a cloudflared tunnel and waits the maximum number of retries
  * for DNS to resolve otherwise the state is "unknown"
@@ -90,6 +99,8 @@ const startCloudflaredTunnel = async (
     child: ChildProcess,
     stop: () => Promise<boolean>
 }> => {
+    await installCloudflared();
+
     const _tunnel = tunnel({
         '--url': localURL
     });
