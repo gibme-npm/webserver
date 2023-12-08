@@ -128,6 +128,10 @@ export interface WebApplicationOptions {
      * Auto start cloudflared?
      */
     autoStartTunnel: boolean;
+    /**
+     * Body size limit in Megabytes (MB)
+     */
+    bodyLimit: number;
 }
 
 /**

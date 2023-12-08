@@ -68,6 +68,7 @@ export const mergeWebApplicationDefaults = (
     options.autoHandle404 ??= processBoolean('AUTO_HANDLE_404', true);
     options.autoHandleOptions ??= processBoolean('AUTO_HANDLE_OPTIONS', true);
     options.autoStartTunnel ??= false;
+    options.bodyLimit ??= parseInt(process.env.BODY_LIMIT ?? '2');
 
     {
         const hostnames: string[] = options.sslHostnames

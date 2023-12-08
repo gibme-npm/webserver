@@ -130,10 +130,10 @@ export default abstract class WebServer {
             app.use(Compression());
         }
 
-        app.use(Express.json());
-        app.use(Express.urlencoded({ extended: true }));
-        app.use(Express.text());
-        app.use(Express.raw());
+        app.use(Express.json({ limit: `${options.bodyLimit}mb` }));
+        app.use(Express.urlencoded({ limit: `${options.bodyLimit}mb`, extended: true }));
+        app.use(Express.text({ limit: `${options.bodyLimit}mb` }));
+        app.use(Express.raw({ limit: `${options.bodyLimit}mb` }));
 
         app.use((request, _response, next) => {
             const ip = request.header('x-forwarded-for') ||
