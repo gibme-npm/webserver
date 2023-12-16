@@ -34,6 +34,7 @@ import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, Cont
 import * as path from 'path';
 import Logger from '@gibme/logger';
 import startCloudflaredTunnel, { installCloudflared } from './cloudflared';
+import multer from 'multer';
 
 export {
     Express,
@@ -42,7 +43,8 @@ export {
     Logger,
     WebSocketRequestHandler,
     Request,
-    Response
+    Response,
+    multer
 };
 
 export default abstract class WebServer {

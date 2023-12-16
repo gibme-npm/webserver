@@ -75,6 +75,9 @@ const waitForDNS = async (
     return waitForDNS(url, ++attempt, maxRetries);
 };
 
+/**
+ * Installs the cloudflared binary if it is not already installed
+ */
 export const installCloudflared = async (): Promise<string> => {
     if (!existsSync(cloudflared)) {
         await install(cloudflared);
