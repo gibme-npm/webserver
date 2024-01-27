@@ -60,25 +60,25 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
-"@gibme/fetch@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@gibme/fetch/-/fetch-1.0.3.tgz#7b2feeef55dc70e8de2ab5cae038b8b368d1172e"
-  integrity sha512-I7hLP3/0Khz3f9LgJfsJaMfbg6X2CnYbGNMJKtQP76niJ/1YXTOId//5w4cOL4S7wlybMiS5DIYcZiVmNNgNzg==
+"@gibme/fetch@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@gibme/fetch/-/fetch-1.0.6.tgz#d1124529e602ccef60c6981438362bdc7348d4d2"
+  integrity sha512-5Vcblve8n7z7rfKJz7qZsG33Rto1pYB4l9w8ACB+oZDEspy7nnrZ69I6krZkQrirUjId4koVqo7Y7mC+NmUksw==
   dependencies:
-    "@types/cookiejar" "^2.1.2"
-    "@types/tough-cookie" "^4.0.2"
+    "@types/cookiejar" "^2.1.5"
+    "@types/tough-cookie" "^4.0.5"
     abort-controller "^3.0.0"
     cross-fetch "^4.0.0"
     fetch-cookie "^2.1.0"
     tough-cookie "^4.1.3"
 
-"@gibme/logger@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@gibme/logger/-/logger-1.0.4.tgz#31eb259eeebdcad38c6c7e7e99bbde9f4a5fb8d9"
-  integrity sha512-ziN5dbx1Pcy6fqAytytNUoZkWaX1tAYEj/mjNxbML3LlNFaUH2nuOJPANmFFtMal3dAwZlOjzqbWLxiiBt4beQ==
+"@gibme/logger@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@gibme/logger/-/logger-1.0.6.tgz#887b4db2436cd4371b7e0b2df8cd4753d5771632"
+  integrity sha512-noMlWnR6lw9/CrSf6ICYLv0xgZ0Rb4RBN6PcGHSabkGcqdTWm2ug1JhKo0DRQXi+ZrF/eW4BjGlwIGXmFXel3w==
   dependencies:
-    dotenv "^16.3.1"
-    winston "^3.10.0"
+    dotenv "^16.4.1"
+    winston "^3.11.0"
 
 "@humanwhocodes/config-array@^0.11.13":
   version "0.11.13"
@@ -185,10 +185,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/cookiejar@^2.1.2":
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.2.tgz#66ad9331f63fe8a3d3d9d8c6e3906dd10f6446e8"
-  integrity sha512-t73xJJrvdTjXrn4jLS9VSGRbz0nUY3cl2DMGDU48lKl+HR9dbbjW2A9r3g40VA++mQpy6uuHg33gy7du2BKpog==
+"@types/cookiejar@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.5.tgz#14a3e83fa641beb169a2dd8422d91c3c345a9a78"
+  integrity sha512-he+DHOWReW0nghN24E1WUqM0efK4kI9oTqDm6XmK8ZPe2djZ90BSNdGnIyCLzCPw7/pogPlGbzI2wHGGmi4O/Q==
 
 "@types/debug@^0.0.30":
   version "0.0.30"
@@ -373,10 +373,10 @@
   resolved "https://registry.yarnpkg.com/@types/tmp/-/tmp-0.0.33.tgz#1073c4bc824754ae3d10cfab88ab0237ba964e4d"
   integrity sha512-gVC1InwyVrO326wbBZw+AO3u2vRXz/iRWq9jYhpG4W8LXyIgDv3ZmcLQ5Q4Gs+gFMyqx+viFoFT+l3p61QFCmQ==
 
-"@types/tough-cookie@^4.0.2":
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.2.tgz#6286b4c7228d58ab7866d19716f3696e03a09397"
-  integrity sha512-Q5vtl1W5ue16D+nIaW8JWebSSraJVlK+EthKn7e7UcD4KWsaSJ8BqGPXNaPghgtcn/fhvrN17Tv8ksUsQpiplw==
+"@types/tough-cookie@^4.0.5":
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.5.tgz#cb6e2a691b70cb177c6e3ae9c1d2e8b2ea8cd304"
+  integrity sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==
 
 "@types/triple-beam@^1.3.2":
   version "1.3.5"
@@ -1060,11 +1060,6 @@ doctrine@^3.0.0:
   integrity sha512-yS+Q5i3hBf7GBkd4KG8a7eBNNWNGLTaEwwYWUijIYM7zrlYDM0BFXHjjPWlWZ1Rg7UaddZeIDmi9jF3HmqiQ2w==
   dependencies:
     esutils "^2.0.2"
-
-dotenv@^16.3.1:
-  version "16.3.1"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-16.3.1.tgz#369034de7d7e5b120972693352a3bf112172cc3e"
-  integrity sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==
 
 dotenv@^16.4.1:
   version "16.4.1"
@@ -3163,7 +3158,7 @@ winston-transport@^4.5.0:
     readable-stream "^3.6.0"
     triple-beam "^1.3.0"
 
-winston@^3.10.0:
+winston@^3.11.0:
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/winston/-/winston-3.11.0.tgz#2d50b0a695a2758bb1c95279f0a88e858163ed91"
   integrity sha512-L3yR6/MzZAOl0DsysUXHVjOwv8mKZ71TrA/41EIduGpOOV5LQVodqN+QdQ6BS6PJ/RdIshZhq84P/fStEZkk7g==
