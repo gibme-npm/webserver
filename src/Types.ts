@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2018-2024, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -230,7 +230,7 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
     /**
      * Returns the WebSocket.Server instance attached to the application
      */
-    getWss?: () => WebSocket.Server<typeof WebSocket, typeof http.IncomingMessage>;
+    getWss: () => WebSocket.Server;
     /**
      * Creates a WebSocket route in the same kind of format as .get/.post/etc
      *

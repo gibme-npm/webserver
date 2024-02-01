@@ -34,7 +34,7 @@ describe('Unit Tests', async () => {
         bindPort: 12345
     });
 
-    app.get('/', (request, response) => {
+    app.get('/', (_request, response) => {
         return response.json({ success: true });
     });
 
