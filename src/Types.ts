@@ -30,6 +30,7 @@ import ExpressWS, { RouterLike } from 'express-ws';
 import WebSocket, { ServerOptions } from 'ws';
 import Application = Express.Application;
 import { Connection } from 'cloudflared';
+import Cache from '@gibme/cache/dist/common';
 
 export { http, https, serveStatic, ExpressWS };
 
@@ -89,6 +90,9 @@ export interface WebApplicationOptions {
     recommendedHeaders?: boolean;
     /**
      * Whether we should log requests to file/console
+     *
+     * Note: if set to `full` then the headers are also logged as well as the request body (if POST/PATCH/PUT)
+     *
      * @default false
      */
     requestLogging?: boolean | 'full';
@@ -132,6 +136,29 @@ export interface WebApplicationOptions {
      * Body size limit in Megabytes (MB)
      */
     bodyLimit: number;
+    /**
+     * Whether we enable session support
+     */
+    sessions: boolean;
+    /**
+     * Session cookie name
+     */
+    sessionName: string;
+    /**
+     * The default session length in seconds
+     */
+    sessionLength: number;
+    /**
+     * The session secret key
+     */
+    sessionSecret: string;
+    /**
+     * The session storage cache to use for session storage
+     *
+     * Note: if this is unset, a memory based storage
+     * backend will be used
+     */
+    sessionStorage?: Cache;
 }
 
 /**

@@ -69,6 +69,10 @@ export const mergeWebApplicationDefaults = (
     options.autoHandleOptions ??= processBoolean('AUTO_HANDLE_OPTIONS', true);
     options.autoStartTunnel ??= false;
     options.bodyLimit ??= parseInt(process.env.BODY_LIMIT ?? '2');
+    options.sessions ??= processBoolean('SESSIONS', false);
+    options.sessionName ||= process.env.SESSION_NAME || 'sid';
+    options.sessionLength ??= parseInt(process.env.SESSION_LENGTH ?? '86400');
+    options.sessionSecret ||= process.env.SESSION_SECRET || 'insecure_session_key';
 
     {
         const hostnames: string[] = options.sslHostnames

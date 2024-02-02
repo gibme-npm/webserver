@@ -35,6 +35,9 @@ import * as path from 'path';
 import Logger from '@gibme/logger';
 import startCloudflaredTunnel, { installCloudflared } from './cloudflared';
 import multer from 'multer';
+import Session from 'express-session';
+import Sessions from './sessions';
+import { v4 as uuid } from 'uuid';
 
 export {
     Express,
@@ -46,6 +49,14 @@ export {
     Response,
     multer
 };
+
+declare global {
+    namespace Express {
+        interface Request {
+            id: string;
+        }
+    }
+}
 
 export default abstract class WebServer {
     /**
@@ -76,6 +87,31 @@ export default abstract class WebServer {
 
         const wsInstance = ExpressWS(app, server, {
             wsOptions: _options.websocketsOptions
+        });
+
+        if (_options.sessions) {
+            app.use(Session({
+                cookie: {
+                    maxAge: _options.sessionLength * 1000,
+                    secure: typeof _options.ssl === 'boolean' ? _options.ssl : true
+                },
+                name: _options.sessionName,
+                resave: false,
+                store: new Sessions({
+                    storage_provider: _options.sessionStorage,
+                    stdTTL: _options.sessionLength
+                }),
+                saveUninitialized: true,
+                secret: _options.sessionSecret
+            }));
+        }
+
+        app.use((request, response, next) => {
+            request.id = uuid();
+
+            response.setHeader('X-Request-ID', request.id);
+
+            return next();
         });
 
         (app as any).applyTo = wsInstance.applyTo;
@@ -142,32 +178,28 @@ export default abstract class WebServer {
                 request.header('cf-connecting-ip') ||
                 request.ip;
 
+            const entry: any = {
+                id: request.id,
+                ip,
+                method: request.method,
+                url: request.url
+            };
+
             if (_options.requestLogging === 'full') {
+                entry.headers = request.headers;
+
                 switch (request.method) {
                     case 'POST':
                     case 'PATCH':
                     case 'PUT':
-                        Logger.debug('%s [%s] %s: %s',
-                            ip,
-                            request.method,
-                            request.url,
-                            typeof request.body === 'object' || Array.isArray(request.body)
-                                ? JSON.stringify(request.body)
-                                : request.body);
+                        entry.body = request.body;
                         break;
                     default:
-                        Logger.debug('%s [%s] %s',
-                            ip,
-                            request.method,
-                            request.url);
                         break;
                 }
-            } else if (_options.requestLogging) {
-                Logger.debug('%s [%s] %s',
-                    ip,
-                    request.method,
-                    request.url);
             }
+
+            Logger.debug(JSON.stringify(entry));
 
             return next();
         });
