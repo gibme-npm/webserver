@@ -65,10 +65,10 @@
   resolved "https://registry.yarnpkg.com/@gar/promisify/-/promisify-1.1.3.tgz#555193ab2e3bb3b6adc3d551c9c030d9e860daf6"
   integrity sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==
 
-"@gibme/cache@^1.1.3":
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/@gibme/cache/-/cache-1.1.3.tgz#3971435936caf8225d2704e4581c5add2295582c"
-  integrity sha512-V7zamRAHXdh210GfN8e32a8CaDhLsk/FNN6p25qBm3lW3RuofsCkVS1mMIuuYTmcXSgCIkKDp7ISTl+CrMq9jg==
+"@gibme/cache@^1.1.4":
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/@gibme/cache/-/cache-1.1.4.tgz#ad07866719f1e966060ec780a20b320660f2e7c6"
+  integrity sha512-vrZQtpDWCJHbLT04gmnvPXfgW7W1uQl4rLmAgYzmgBqH9b1mFNc6561+M+fIMjs3mOAX8eRW2fxueeyMu+iCrw==
   dependencies:
     "@gibme/sql" "^3.1.3"
     "@gibme/timer" "^1.0.6"

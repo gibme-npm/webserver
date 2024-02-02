@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Cache from '@gibme/cache/dist/common';
 import { SessionData, Store } from 'express-session';
-import Memory from '@gibme/cache/memory';
+import Memory, { Cache } from '@gibme/cache/memory';
 
+// this corrects an issue in the upstream types definition
 declare module 'express-session' {
     interface SessionData {
         [key: string]: any;
@@ -30,7 +30,7 @@ declare module 'express-session' {
 
 /**
  * Implements the Storage class for express-session using
- * @gibme/cache as the underlying storage provider
+ * a `Cache` of @gibme/cache as the underlying storage provider
  */
 export default class Sessions extends Store {
     private readonly cache: Cache;

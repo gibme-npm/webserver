@@ -89,6 +89,17 @@ export default abstract class WebServer {
             wsOptions: _options.websocketsOptions
         });
 
+        (app as any).applyTo = wsInstance.applyTo;
+
+        (app as any).getWss = wsInstance.getWss;
+
+        (app as any).ws = wsInstance.app.ws;
+
+        app.use(Express.json({ limit: `${options.bodyLimit}mb` }));
+        app.use(Express.urlencoded({ limit: `${options.bodyLimit}mb`, extended: true }));
+        app.use(Express.text({ limit: `${options.bodyLimit}mb` }));
+        app.use(Express.raw({ limit: `${options.bodyLimit}mb` }));
+
         if (_options.sessions) {
             app.use(Session({
                 cookie: {
@@ -106,21 +117,11 @@ export default abstract class WebServer {
             }));
         }
 
+        // add our always defined headers
         app.use((request, response, next) => {
             request.id = uuid();
 
             response.setHeader('X-Request-ID', request.id);
-
-            return next();
-        });
-
-        (app as any).applyTo = wsInstance.applyTo;
-
-        (app as any).getWss = wsInstance.getWss;
-
-        (app as any).ws = wsInstance.app.ws;
-
-        app.use((_request, response, next) => {
             response.removeHeader('x-powered-by');
 
             return next();
@@ -168,41 +169,38 @@ export default abstract class WebServer {
             app.use(Compression());
         }
 
-        app.use(Express.json({ limit: `${options.bodyLimit}mb` }));
-        app.use(Express.urlencoded({ limit: `${options.bodyLimit}mb`, extended: true }));
-        app.use(Express.text({ limit: `${options.bodyLimit}mb` }));
-        app.use(Express.raw({ limit: `${options.bodyLimit}mb` }));
+        if (_options.requestLogging) {
+            app.use((request, _response, next) => {
+                const ip = request.header('x-forwarded-for') ||
+                    request.header('cf-connecting-ip') ||
+                    request.ip;
 
-        app.use((request, _response, next) => {
-            const ip = request.header('x-forwarded-for') ||
-                request.header('cf-connecting-ip') ||
-                request.ip;
+                const entry: any = {
+                    id: request.id,
+                    ip,
+                    method: request.method,
+                    url: request.url
+                };
 
-            const entry: any = {
-                id: request.id,
-                ip,
-                method: request.method,
-                url: request.url
-            };
+                if (_options.requestLogging === 'full') {
+                    entry.headers = request.headers;
 
-            if (_options.requestLogging === 'full') {
-                entry.headers = request.headers;
-
-                switch (request.method) {
-                    case 'POST':
-                    case 'PATCH':
-                    case 'PUT':
-                        entry.body = request.body;
-                        break;
-                    default:
-                        break;
+                    switch (request.method) {
+                        case 'POST':
+                        case 'PATCH':
+                        case 'PUT':
+                            entry.body = request.body;
+                            break;
+                        default:
+                            break;
+                    }
                 }
-            }
 
-            Logger.debug(JSON.stringify(entry));
+                Logger.debug(JSON.stringify(entry));
 
-            return next();
-        });
+                return next();
+            });
+        }
 
         (app as any).bindHost = _options.bindHost;
         (app as any).bindPort = _options.bindPort;
