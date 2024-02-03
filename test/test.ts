@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2022, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2018-2024, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,23 +19,30 @@
 // SOFTWARE.
 
 import { describe, it, after, before } from 'mocha';
-import fetch from '@gibme/fetch';
+import fetch, { CookieJar } from '@gibme/fetch';
 import WebServer from '../src/WebServer';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import assert from 'assert';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import WebSocket from 'ws';
 import Logger from '@gibme/logger';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
-        bindPort: 12345
+        bindPort: 12345,
+        sessions: true
     });
 
     app.get('/', (_request, response) => {
         return response.json({ success: true });
+    });
+
+    app.post('/sessiontest', (request, response) => {
+        request.session.body = request.body;
+
+        return response.status(200).send();
+    });
+
+    app.get('/sessiontest', (request, response) => {
+        return response.json(request.session.body ?? {});
     });
 
     app.ws('/wss', (socket) => {
@@ -90,11 +97,37 @@ describe('Unit Tests', async () => {
                 timeout: 5_000
             });
 
-            assert(response.ok);
+            assert.ok(response.ok);
 
             const json: {success: boolean} = await response.json();
 
-            assert(json.success);
+            assert.ok(json.success);
+        });
+
+        describe('Sessions Test', async () => {
+            const jar = new CookieJar();
+            const data = { success: true, check: 'sessions' };
+
+            it('POST Request', async () => {
+                const response = await fetch.post(`${app.url}/sessiontest`, {
+                    cookieJar: jar,
+                    json: data
+                });
+
+                assert.ok(response.ok);
+            });
+
+            it('GET request', async () => {
+                const response = await fetch.get(`${app.url}/sessiontest`, {
+                    cookieJar: jar
+                });
+
+                assert.ok(response.ok);
+
+                const json = await response.json();
+
+                assert.deepEqual(json, data);
+            });
         });
     });
 
