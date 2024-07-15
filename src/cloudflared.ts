@@ -54,15 +54,15 @@ const checkDNS = async (hostname: string): Promise<boolean> =>
 /**
  * @ignore
  * @param url
- * @param attempt
  * @param maxRetries
  * @param timeout
+ * @param attempt
  */
 const waitForDNS = async (
     url: string,
-    attempt = 0,
     maxRetries = 10,
-    timeout = 2000
+    timeout = 2000,
+    attempt = 0
 ): Promise<boolean> => {
     if (attempt >= maxRetries) {
         return false;
@@ -76,7 +76,7 @@ const waitForDNS = async (
         return result;
     }
 
-    return waitForDNS(url, ++attempt, maxRetries);
+    return waitForDNS(url, maxRetries, timeout, ++attempt);
 };
 
 /**
