@@ -268,11 +268,11 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
     /**
      * Installs the cloudflared binary
      */
-    installCloudflared: () => Promise<void>;
+    installCloudflared: () => Promise<string | undefined>;
     /**
      * Starts a temporary cloudflared tunnel to cloudflare
      */
-    tunnelStart: (maxRetries?: number, timeout?: number) => Promise<void>;
+    tunnelStart: (maxRetries?: number, timeout?: number) => Promise<boolean>;
     /**
      * The cloudflared tunnel url
      */

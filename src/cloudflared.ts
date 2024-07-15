@@ -22,6 +22,7 @@ import { tunnel, Connection, bin as cloudflared, install } from 'cloudflared';
 import { lookup, setServers, getServers } from 'dns';
 import { ChildProcess } from 'child_process';
 import { existsSync } from 'fs';
+import fetch from '@gibme/fetch';
 
 export { Connection };
 
@@ -80,14 +81,51 @@ const waitForDNS = async (
 };
 
 /**
- * Installs the cloudflared binary if it is not already installed
+ * Wait for HTTPs to respond over the tunnel
+ *
+ * @param url
+ * @param maxRetries
+ * @param timeout
+ * @param attempt
  */
-export const installCloudflared = async (): Promise<string> => {
-    if (!existsSync(cloudflared)) {
-        await install(cloudflared);
+const waitForHttps = async (
+    url: string,
+    maxRetries = 10,
+    timeout = 2000,
+    attempt = 0
+): Promise<boolean> => {
+    if (attempt >= maxRetries) {
+        return false;
     }
 
-    return cloudflared;
+    await sleep(timeout);
+
+    try {
+        await fetch(url);
+
+        return true;
+    } catch (error: any) {
+        if (error.toString().toLowerCase().includes('ENOTFOUND')) {
+            return waitForHttps(url, maxRetries, timeout, ++attempt);
+        }
+
+        return false;
+    }
+};
+
+/**
+ * Installs the cloudflared binary if it is not already installed
+ */
+export const installCloudflared = async (): Promise<string | undefined> => {
+    try {
+        if (!existsSync(cloudflared)) {
+            await install(cloudflared);
+        }
+
+        return cloudflared;
+    } catch {
+
+    }
 };
 
 /**
@@ -107,8 +145,12 @@ const startCloudflaredTunnel = async (
     connections: Connection[],
     child: ChildProcess,
     stop: () => Promise<boolean>
-}> => {
-    await installCloudflared();
+} | undefined> => {
+    const cloudflared = await installCloudflared();
+
+    if (!cloudflared) {
+        return;
+    }
 
     const _tunnel = tunnel({
         '--url': localURL
@@ -128,10 +170,15 @@ const startCloudflaredTunnel = async (
         }
     };
 
-    await waitForDNS(url, maxRetries, timeout);
+    // wait until the tunnel DNS resolves
+    if (!await waitForDNS(url, maxRetries, timeout)) {
+        return;
+    }
 
-    // we need to sleep here to let the local network resolve get it's act together
-    await sleep(timeout);
+    // wait until the tunnel is actually reachable
+    if (!await waitForHttps(url, maxRetries, timeout)) {
+        return;
+    }
 
     return {
         url,

@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@gibme/cache": "^1.1.10",
+    "@gibme/fetch": "^1.0.14",
     "@gibme/logger": "^1.0.10",
     "@types/compression": "^1.7.5",
     "@types/express": "^4.17.21",
@@ -58,7 +59,6 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
-    "@gibme/fetch": "^1.0.14",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.16",
     "@typescript-eslint/eslint-plugin": "^6.20.0",

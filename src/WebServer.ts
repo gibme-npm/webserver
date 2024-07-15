@@ -243,11 +243,14 @@ export default abstract class WebServer {
 
         (app as any).tunnelStop = async () => { return undefined; };
 
-        (app as any).tunnelStart = async (maxRetries = 10, timeout = 2000): Promise<void> => {
+        (app as any).tunnelStart = async (maxRetries = 10, timeout = 2000): Promise<boolean> => {
             (app as any).cloudflared = await installCloudflared();
 
-            const { url, connections, child, stop } =
-                await startCloudflaredTunnel((app as any).localUrl, maxRetries, timeout);
+            const tunnel = await startCloudflaredTunnel((app as any).localUrl, maxRetries, timeout);
+
+            if (!tunnel) return false;
+
+            const { url, connections, child, stop } = tunnel;
 
             (app as any).tunnelUrl = (app as any).url = url;
 
@@ -266,6 +269,8 @@ export default abstract class WebServer {
 
             child.on('error', error => app.emit('error', error));
             child.on('exit', code => app.emit('tunnelClosed', code));
+
+            return true;
         };
 
         (app as any).start = async (): Promise<void> => {

@@ -67,20 +67,28 @@ describe('Unit Tests', async () => {
             try {
                 const binary = await app.installCloudflared();
 
+                if (!binary) {
+                    return this.skip();
+                }
+
                 Logger.warn('Cloudflared: %s', binary);
             } catch {
-                this.skip();
+                return this.skip();
             }
 
             try {
-                await app.tunnelStart();
+                const tunnel = await app.tunnelStart();
+
+                if (!tunnel) {
+                    return this.skip();
+                }
 
                 Logger.info('Tunnel URL: %s', app.tunnelUrl);
                 Logger.info('URL: %s', app.url);
             } catch {
                 await app.tunnelStop();
 
-                this.skip();
+                return this.skip();
             }
         });
 
