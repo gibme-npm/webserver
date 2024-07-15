@@ -19,15 +19,17 @@
 // SOFTWARE.
 
 import { tunnel, Connection, bin as cloudflared, install } from 'cloudflared';
-import { lookup, setServers } from 'dns';
+import { lookup, setServers, getServers } from 'dns';
 import { ChildProcess } from 'child_process';
 import { existsSync } from 'fs';
 
 export { Connection };
 
 setServers([
+    ...getServers(),
+    '1.1.1.1',
     '8.8.8.8',
-    '8.8.4.4'
+    '9.9.9.9'
 ]);
 
 /** @ignore */
@@ -40,7 +42,7 @@ const sleep = async (timeout: number) =>
  */
 const checkDNS = async (hostname: string): Promise<boolean> =>
     new Promise(resolve => {
-        lookup(hostname, error => {
+        lookup(hostname, (error) => {
             if (error) {
                 return resolve(false);
             }
@@ -54,17 +56,19 @@ const checkDNS = async (hostname: string): Promise<boolean> =>
  * @param url
  * @param attempt
  * @param maxRetries
+ * @param timeout
  */
 const waitForDNS = async (
     url: string,
     attempt = 0,
-    maxRetries = 10
+    maxRetries = 10,
+    timeout = 2000
 ): Promise<boolean> => {
     if (attempt >= maxRetries) {
         return false;
     }
 
-    await sleep(2_000);
+    await sleep(timeout);
 
     const result = await checkDNS(new URL(url).hostname);
 
@@ -92,10 +96,12 @@ export const installCloudflared = async (): Promise<string> => {
  *
  * @param localURL
  * @param maxRetries
+ * @param timeout
  */
 const startCloudflaredTunnel = async (
     localURL: string,
-    maxRetries = 10
+    maxRetries = 10,
+    timeout = 2000
 ): Promise<{
     url: string,
     connections: Connection[],
@@ -122,10 +128,10 @@ const startCloudflaredTunnel = async (
         }
     };
 
-    await waitForDNS(url, maxRetries);
+    await waitForDNS(url, maxRetries, timeout);
 
     // we need to sleep here to let the local network resolve get it's act together
-    await sleep(2_000);
+    await sleep(timeout);
 
     return {
         url,

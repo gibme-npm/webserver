@@ -272,7 +272,7 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
     /**
      * Starts a temporary cloudflared tunnel to cloudflare
      */
-    tunnelStart: (maxRetries?: number) => Promise<void>;
+    tunnelStart: (maxRetries?: number, timeout?: number) => Promise<void>;
     /**
      * The cloudflared tunnel url
      */
