@@ -159,6 +159,11 @@ export interface WebApplicationOptions {
      * backend will be used
      */
     sessionStorage?: Cache;
+    /**
+     * If set to true, allows node to crash via thrown exceptions
+     * If set to false (or unset), thrown exceptions are swallowed and logged automatically
+     */
+    allowProcessErrors: boolean;
 }
 
 /**

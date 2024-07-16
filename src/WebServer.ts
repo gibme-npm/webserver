@@ -76,6 +76,18 @@ export default abstract class WebServer {
     ): WebApplication {
         let _options = mergeWebApplicationDefaults(options);
 
+        if (!_options.allowProcessErrors) {
+            // *waves hand in jedi manner* there will be no crashes here
+            process.on('uncaughtException', (error, origin) => {
+                Logger.error('Caught Exception: %s', error.toString());
+                Logger.error(origin);
+            });
+            process.on('unhandledRejection', (reason: Error | any, p: Promise<unknown>) => {
+                Logger.error('Unhandled Rejection at: Promise %s reason: %s', p, reason);
+                Logger.error(reason.stack);
+            });
+        }
+
         const app = Express();
 
         const server = (_options.ssl
@@ -263,7 +275,7 @@ export default abstract class WebServer {
                     (app as any).url = (app as any).localUrl;
                     delete (app as any).tunnelUrl;
                     delete (app as any).tunnelConnections;
-                    (app as any).tunnelStop = async () => { return undefined; };
+                    (app as any).tunnelStop = async () => {};
                 }
             };
 

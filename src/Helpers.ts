@@ -73,6 +73,7 @@ export const mergeWebApplicationDefaults = (
     options.sessionName ||= process.env.SESSION_NAME || 'sid';
     options.sessionLength ??= parseInt(process.env.SESSION_LENGTH ?? '86400');
     options.sessionSecret ||= process.env.SESSION_SECRET || 'insecure_session_key';
+    options.allowProcessErrors ??= false;
 
     {
         const hostnames: string[] = options.sslHostnames
