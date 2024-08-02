@@ -18,21 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import * as core from 'express-serve-static-core';
-import * as https from 'https';
-import * as http from 'http';
-import * as Express from 'express';
-import { Request, NextFunction } from 'express';
-import * as serveStatic from 'serve-static';
-import { AddressInfo } from 'net';
-import { HelmetOptions } from 'helmet';
-import ExpressWS, { RouterLike } from 'express-ws';
-import WebSocket, { ServerOptions } from 'ws';
-import Application = Express.Application;
-import { Connection } from 'cloudflared';
-import Cache from '@gibme/cache/dist/common';
+import type { PathParams } from 'express-serve-static-core';
+import type { Server as HTTPServer } from 'http';
+import type { Server as HTTPSServer } from 'https';
+import type { Application, Request, NextFunction } from 'express';
+import type { ServeStaticOptions } from 'serve-static';
+import type { AddressInfo } from 'net';
+import type { HelmetOptions } from 'helmet';
+import type { RouterLike } from 'express-ws';
+import type { SessionOptions } from 'express-session';
+import type {
+    ServerOptions as WebSocketServerOptions,
+    WebSocket as WebSocketInstance,
+    Server as WebSocketServer
+} from 'ws';
+import type { Connection } from 'cloudflared';
 
-export { http, https, serveStatic, ExpressWS };
+export { ServeStaticOptions };
 
 /**
  * Web Application Options
@@ -127,7 +129,7 @@ export interface WebApplicationOptions {
     /**
      * WebSocket server options
      */
-    websocketsOptions?: ServerOptions;
+    websocketsOptions?: WebSocketServerOptions;
     /**
      * Auto start cloudflared?
      */
@@ -138,27 +140,10 @@ export interface WebApplicationOptions {
     bodyLimit: number;
     /**
      * Whether we enable session support
-     */
-    sessions: boolean;
-    /**
-     * Session cookie name
-     */
-    sessionName: string;
-    /**
-     * The default session length in seconds
-     */
-    sessionLength: number;
-    /**
-     * The session secret key
-     */
-    sessionSecret: string;
-    /**
-     * The session storage cache to use for session storage
      *
-     * Note: if this is unset, a memory based storage
-     * backend will be used
+     * Note: At a minimum, a secret must be supplied if options are specified
      */
-    sessionStorage?: Cache;
+    sessions?: SessionOptions | true;
     /**
      * If set to true, allows node to crash via thrown exceptions
      * If set to false (or unset), thrown exceptions are swallowed and logged automatically
@@ -185,7 +170,7 @@ interface ROWebApplicationProperties {
     /**
      * The underlying HTTP/S server
      */
-    server: http.Server | https.Server;
+    server: HTTPServer | HTTPSServer;
     /**
      * If SSL is enabled
      */
@@ -203,7 +188,7 @@ interface ROWebApplicationProperties {
 /**
  * The WebSocket Request Handler callback
  */
-export type WebSocketRequestHandler = (socket: WebSocket.WebSocket, request: Request, next: NextFunction) => void;
+export type WebSocketRequestHandler = (socket: WebSocketInstance, request: Request, next: NextFunction) => void;
 
 /**
  * Extends an Express.Application
@@ -232,14 +217,14 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
      * Opposite of unref(), calling ref() on a previously unrefed server will not let the program exit if it's
      * the only server left (the default behavior). If the server is refed calling ref() again will have no effect.
      */
-    ref: () => http.Server | https.Server;
+    ref: () => HTTPServer | HTTPSServer;
     /**
      * Serves a static path via the Express application
      *
      * @param local_path
      * @param options
      */
-    serveStatic: (local_path: string, options?: serveStatic.ServeStaticOptions) => void;
+    serveStatic: (local_path: string, options?: ServeStaticOptions) => void;
     /**
      * Sets the maximum number of connections that the underlying TCP server will accept
      *
@@ -258,18 +243,18 @@ export interface WebApplication extends Application, Readonly<ROWebApplicationPr
      * Calling unref() on a server will allow the program to exit if this is the only active server in the
      * event system. If the server is already unrefed calling unref() again will have no effect.
      */
-    unref: () => http.Server | https.Server;
+    unref: () => HTTPServer | HTTPSServer;
     /**
      * Returns the WebSocket.Server instance attached to the application
      */
-    getWss: () => WebSocket.Server;
+    getWss: () => WebSocketServer;
     /**
      * Creates a WebSocket route in the same kind of format as .get/.post/etc
      *
      * @param route
      * @param middlewares
      */
-    ws: (route: core.PathParams, ...middlewares: WebSocketRequestHandler[]) => void;
+    ws: (route: PathParams, ...middlewares: WebSocketRequestHandler[]) => void;
     /**
      * Installs the cloudflared binary
      */

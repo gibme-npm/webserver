@@ -25,6 +25,12 @@ import assert from 'assert';
 import WebSocket from 'ws';
 import Logger from '@gibme/logger';
 
+declare module 'express-session' {
+    interface SessionData {
+        body?: any;
+    }
+}
+
 describe('Unit Tests', async () => {
     const app = WebServer.create({
         bindPort: 12345,
@@ -45,7 +51,7 @@ describe('Unit Tests', async () => {
         return response.json(request.session.body ?? {});
     });
 
-    app.ws('/wss', (socket) => {
+    app.ws('/wss', socket => {
         socket.on('message', msg => {
             socket.send(msg);
         });

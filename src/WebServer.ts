@@ -18,26 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import type { WebApplication, WebApplicationOptions, WebSocketRequestHandler, ServeStaticOptions } from './Types';
+import { createServer as createHTTPServer } from 'http';
+import { createServer as createHTTPSServer } from 'https';
 import Express, { Request, Response } from 'express';
+import ExpressWS from 'express-ws';
+import ExpressSession from 'express-session';
 import Helmet from 'helmet';
 import Compression from 'compression';
-import {
-    ExpressWS,
-    http,
-    https,
-    serveStatic,
-    WebApplication,
-    WebApplicationOptions,
-    WebSocketRequestHandler
-} from './Types';
-import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, ContentSecurityHeader } from './Helpers';
-import * as path from 'path';
+import multer from 'multer';
 import Logger from '@gibme/logger';
 import startCloudflaredTunnel, { installCloudflared } from './cloudflared';
-import multer from 'multer';
-import Session from 'express-session';
-import Sessions from './sessions';
+import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, ContentSecurityHeader } from './Helpers';
+import { resolve } from 'path';
 import { v4 as uuid } from 'uuid';
+import SessionStorage from './sessions';
 
 export {
     Express,
@@ -47,13 +42,15 @@ export {
     WebSocketRequestHandler,
     Request,
     Response,
-    multer
+    multer,
+    SessionStorage
 };
 
 declare global {
     namespace Express {
         interface Request {
             id: string;
+            remoteIp?: string;
         }
     }
 }
@@ -69,14 +66,14 @@ export default abstract class WebServer {
      * for the specified hostname(s) and installing a development
      * root CA in your OS. This mode is **NOT** for production use.
      *
-     * @param options
+     * @param serverOptions
      */
     public static create (
-        options: Partial<WebApplicationOptions> = {}
+        serverOptions: Partial<WebApplicationOptions> = {}
     ): WebApplication {
-        let _options = mergeWebApplicationDefaults(options);
+        let options = mergeWebApplicationDefaults(serverOptions);
 
-        if (!_options.allowProcessErrors) {
+        if (!options.allowProcessErrors) {
             // *waves hand in jedi manner* there will be no crashes here
             process.on('uncaughtException', (error, origin) => {
                 Logger.error('Caught Exception: %s', error.toString());
@@ -88,50 +85,41 @@ export default abstract class WebServer {
             });
         }
 
-        const app = Express();
+        const app = Express() as any as WebApplication;
 
-        const server = (_options.ssl
-            ? https.createServer({
-                key: _options.sslPrivateKey,
-                cert: _options.sslCertificate
+        const server = (options.ssl
+            ? createHTTPSServer({
+                key: options.sslPrivateKey,
+                cert: options.sslCertificate
             }, app)
-            : http.createServer(app));
+            : createHTTPServer(app));
 
         const wsInstance = ExpressWS(app, server, {
-            wsOptions: _options.websocketsOptions
+            wsOptions: options.websocketsOptions
         });
 
-        (app as any).applyTo = wsInstance.applyTo;
+        app.applyTo = wsInstance.applyTo;
 
-        (app as any).getWss = wsInstance.getWss;
+        app.getWss = wsInstance.getWss;
 
-        (app as any).ws = wsInstance.app.ws;
+        app.ws = wsInstance.app.ws;
 
         app.use(Express.json({ limit: `${options.bodyLimit}mb` }));
         app.use(Express.urlencoded({ limit: `${options.bodyLimit}mb`, extended: true }));
         app.use(Express.text({ limit: `${options.bodyLimit}mb` }));
         app.use(Express.raw({ limit: `${options.bodyLimit}mb` }));
 
-        if (_options.sessions) {
-            app.use(Session({
-                cookie: {
-                    maxAge: _options.sessionLength * 1000,
-                    secure: typeof _options.ssl === 'boolean' ? _options.ssl : true
-                },
-                name: _options.sessionName,
-                resave: false,
-                store: new Sessions({
-                    storage_provider: _options.sessionStorage,
-                    stdTTL: _options.sessionLength
-                }),
-                saveUninitialized: true,
-                secret: _options.sessionSecret
-            }));
+        if (typeof options.sessions === 'object') {
+            app.use(ExpressSession(options.sessions));
         }
 
         // add our always defined headers
         app.use((request, response, next) => {
             request.id = uuid();
+            request.remoteIp = request.header('cf-connecting-ipv6') ||
+                request.header('x-forwarded-for') ||
+                request.header('cf-connecting-ip') ||
+                request.ip;
 
             response.setHeader('X-Request-ID', request.id);
             response.removeHeader('x-powered-by');
@@ -140,9 +128,9 @@ export default abstract class WebServer {
         });
 
         // Set the CORS header if set in the options
-        if (_options.corsDomain.length !== 0) {
+        if (options.corsDomain.length !== 0) {
             app.use((_request, response, next) => {
-                response.header('Access-Control-Allow-Origin', _options.corsDomain.trim());
+                response.header('Access-Control-Allow-Origin', options.corsDomain.trim());
                 response.header('X-Requested-With', '*');
                 response.header('Access-Control-Allow-Headers', '*');
                 response.header('Access-Control-Allow-Methods', '*');
@@ -151,8 +139,8 @@ export default abstract class WebServer {
             });
         }
 
-        if (_options.recommendedHeaders) {
-            app.use(Helmet(_options.helmet));
+        if (options.recommendedHeaders) {
+            app.use(Helmet(options.helmet));
 
             app.use((_request, response, next) => {
                 const headers = RecommendedHeaders();
@@ -165,7 +153,7 @@ export default abstract class WebServer {
             });
         }
 
-        if (_options.enableContentSecurityPolicyHeader) {
+        if (options.enableContentSecurityPolicyHeader) {
             app.use((_request, response, next) => {
                 const headers = ContentSecurityHeader();
 
@@ -177,24 +165,20 @@ export default abstract class WebServer {
             });
         }
 
-        if (_options.compression) {
+        if (options.compression) {
             app.use(Compression());
         }
 
-        if (_options.requestLogging) {
+        if (options.requestLogging) {
             app.use((request, _response, next) => {
-                const ip = request.header('x-forwarded-for') ||
-                    request.header('cf-connecting-ip') ||
-                    request.ip;
-
                 const entry: any = {
                     id: request.id,
-                    ip,
+                    ip: request.ip,
                     method: request.method,
                     url: request.url
                 };
 
-                if (_options.requestLogging === 'full') {
+                if (options.requestLogging === 'full') {
                     entry.headers = request.headers;
 
                     switch (request.method) {
@@ -214,68 +198,69 @@ export default abstract class WebServer {
             });
         }
 
-        (app as any).bindHost = _options.bindHost;
-        (app as any).bindPort = _options.bindPort;
-        (app as any).ssl = _options.ssl;
+        (app as any).bindHost = options.bindHost;
+        (app as any).bindPort = options.bindPort;
+        (app as any).ssl = options.ssl;
         (app as any).localUrl = [
-            `http${_options.ssl ? 's' : ''}://`,
-            _options.bindHost === '0.0.0.0' ? '127.0.0.1' : _options.bindHost,
-            `:${_options.bindPort}`
+            `http${options.ssl ? 's' : ''}://`,
+            options.bindHost === '0.0.0.0' ? '127.0.0.1' : options.bindHost,
+            `:${options.bindPort}`
         ].join('');
-        (app as any).url = (app as any).localUrl;
+        (app as any).url = app.localUrl;
 
         (app as any).address = () => server.address();
 
-        (app as any).getConnections = async (): Promise<number> => new Promise((resolve, reject) => {
-            server.getConnections((error, count) => {
-                if (error) {
-                    return reject(error);
-                }
+        app.getConnections = async (): Promise<number> =>
+            new Promise((resolve, reject) => {
+                server.getConnections((error, count) => {
+                    if (error) {
+                        return reject(error);
+                    }
 
-                return resolve(count);
+                    return resolve(count);
+                });
             });
-        });
 
-        (app as any).getMaxConnections = () => server.maxConnections;
+        app.getMaxConnections = () => server.maxConnections;
 
-        (app as any).ref = () => server.ref();
+        app.ref = () => server.ref();
 
-        (app as any).serveStatic = (
+        app.serveStatic = (
             local_path: string,
-            options?: serveStatic.ServeStaticOptions
+            options?: ServeStaticOptions
         ): void => {
-            app.use(Express.static(path.resolve(local_path), options));
+            app.use(Express.static(resolve(local_path), options));
         };
 
-        (app as any).setMaxConnections = (maximum: number): void => {
+        app.setMaxConnections = (maximum: number): void => {
             server.maxConnections = maximum;
         };
 
-        (app as any).installCloudflared = installCloudflared;
+        app.installCloudflared = installCloudflared;
 
-        (app as any).tunnelStop = async () => { return undefined; };
+        app.tunnelStop = async (): Promise<void> => {};
 
-        (app as any).tunnelStart = async (maxRetries = 10, timeout = 2000): Promise<boolean> => {
-            (app as any).cloudflared = await installCloudflared();
+        app.tunnelStart = async (maxRetries = 10, timeout = 2000): Promise<boolean> => {
+            app.cloudflared = await installCloudflared();
 
-            const tunnel = await startCloudflaredTunnel((app as any).localUrl, maxRetries, timeout);
+            const tunnel = await startCloudflaredTunnel(app.localUrl, maxRetries, timeout);
 
             if (!tunnel) return false;
 
             const { url, connections, child, stop } = tunnel;
 
-            (app as any).tunnelUrl = (app as any).url = url;
+            app.tunnelUrl = (app as any).url = url;
 
-            (app as any).tunnelConnections = connections;
+            app.tunnelConnections = connections;
 
-            (app as any).tunnelStop = async () => {
+            app.tunnelStop = async () => {
                 try {
                     await stop();
                 } catch {} finally {
-                    (app as any).url = (app as any).localUrl;
-                    delete (app as any).tunnelUrl;
-                    delete (app as any).tunnelConnections;
-                    (app as any).tunnelStop = async () => {};
+                    (app as any).url = app.localUrl;
+                    delete app.tunnelUrl;
+                    delete app.tunnelConnections;
+                    app.tunnelStop = async (): Promise<void> => {};
                 }
             };
 
@@ -285,16 +270,16 @@ export default abstract class WebServer {
             return true;
         };
 
-        (app as any).start = async (): Promise<void> => {
-            (app as any).appOptions = _options = await updateSSLOptions(_options);
+        app.start = async (): Promise<void> => {
+            (app as any).appOptions = options = await updateSSLOptions(options);
 
-            if (_options.autoHandleOptions) {
+            if (options.autoHandleOptions) {
                 app.options('*', (_request, response) => {
                     return response.sendStatus(200).send();
                 });
             }
 
-            if (_options.autoHandle404) {
+            if (options.autoHandle404) {
                 app.all('*', (_request, response) => {
                     return response.sendStatus(404).send();
                 });
@@ -305,7 +290,7 @@ export default abstract class WebServer {
                     return reject(error);
                 });
 
-                server.listen(_options.bindPort, _options.bindHost, _options.backlog, () => {
+                server.listen(options.bindPort, options.bindHost, options.backlog, () => {
                     server.removeAllListeners('error');
 
                     server.on('error', error => app.emit('error', error));
@@ -316,13 +301,13 @@ export default abstract class WebServer {
 
             await start();
 
-            if (_options.autoStartTunnel) {
-                await (app as any).tunnelStart();
+            if (options.autoStartTunnel) {
+                await app.tunnelStart();
             }
         };
 
-        (app as any).stop = async (): Promise<void> => {
-            await (app as any).tunnelStop();
+        app.stop = async (): Promise<void> => {
+            await app.tunnelStop();
 
             return new Promise((resolve, reject) => {
                 if (!server.listening) {
@@ -339,13 +324,13 @@ export default abstract class WebServer {
             });
         };
 
-        (app as any).unref = () => server.unref();
+        app.unref = () => server.unref();
 
         (app as any).server = server;
 
-        (app as any).appOptions = _options;
+        (app as any).appOptions = options;
 
-        return app as any;
+        return app;
     }
 }
 

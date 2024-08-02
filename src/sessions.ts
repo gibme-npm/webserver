@@ -21,18 +21,11 @@
 import { SessionData, Store } from 'express-session';
 import Memory, { Cache } from '@gibme/cache/memory';
 
-// this corrects an issue in the upstream types definition
-declare module 'express-session' {
-    interface SessionData {
-        [key: string]: any;
-    }
-}
-
 /**
  * Implements the Storage class for express-session using
  * a `Cache` of @gibme/cache as the underlying storage provider
  */
-export default class Sessions extends Store {
+export default class SessionStorage extends Store {
     private readonly cache: Cache;
 
     /**
@@ -143,4 +136,4 @@ export default class Sessions extends Store {
     }
 }
 
-export { Sessions };
+export { SessionStorage };

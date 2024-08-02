@@ -20,12 +20,13 @@
 
 import { isIP } from 'net';
 import { readFileSync } from 'fs';
-import * as path from 'path';
-import * as devcert from 'devcert';
+import { resolve } from 'path';
+import { certificateFor as devcert } from 'devcert';
 import { WebApplicationOptions } from './Types';
-import * as dotenv from 'dotenv';
+import { config } from 'dotenv';
+import SessionStorage from './sessions';
 
-dotenv.config();
+config();
 
 /** @ignore */
 const processBoolean = (envVar: string, default_value: boolean): boolean => {
@@ -43,6 +44,14 @@ const processBoolean = (envVar: string, default_value: boolean): boolean => {
     }
 };
 
+/** @ignore */
+const processNumber = (envVar: string, default_value: number): number =>
+    parseInt(process.env[envVar] ?? default_value.toString());
+
+/** @ignore */
+const processString = (envVar: string, default_value: string): string =>
+    process.env[envVar] ?? default_value;
+
 /**
  * Merges configuration options with their defaults and/or environment variables
  *
@@ -52,28 +61,40 @@ const processBoolean = (envVar: string, default_value: boolean): boolean => {
 export const mergeWebApplicationDefaults = (
     options: Partial<WebApplicationOptions> = {}
 ): WebApplicationOptions => {
-    options.helmet ||= {};
-    options.bindHost ||= process.env.BIND_HOST ?? '0.0.0.0';
-    options.backlog ||= parseInt(process.env.BACKLOG ?? '511');
+    options.helmet ??= {};
+    options.bindHost ??= processString('BIND_HOST', '0.0.0.0');
+    options.backlog ??= processNumber('BACKLOG', 511);
     options.recommendedHeaders ??= processBoolean('USE_RECOMMENDED_HEADERS', true);
     options.enableContentSecurityPolicyHeader ??= processBoolean('ENABLE_CSP_HEADER', false);
     options.compression ??= processBoolean('USE_COMPRESSION', true);
-    options.corsDomain ||= process.env.CORS_DOMAIN ?? '*';
+    options.corsDomain ??= processString('CORS_DOMAIN', '*');
     options.ssl ??= processBoolean('USE_SSL', false);
-    options.bindPort ||=
-        parseInt(process.env.BIND_PORT || options.ssl ? '443' : '80');
+    options.bindPort ??= processNumber('BIND_PORT', options.ssl ? 443 : 80);
     options.requestLogging ??= process.env.REQUEST_LOGGING === 'full'
         ? 'full'
         : processBoolean('REQUEST_LOGGING', false);
     options.autoHandle404 ??= processBoolean('AUTO_HANDLE_404', true);
     options.autoHandleOptions ??= processBoolean('AUTO_HANDLE_OPTIONS', true);
     options.autoStartTunnel ??= false;
-    options.bodyLimit ??= parseInt(process.env.BODY_LIMIT ?? '2');
-    options.sessions ??= processBoolean('SESSIONS', false);
-    options.sessionName ||= process.env.SESSION_NAME || 'sid';
-    options.sessionLength ??= parseInt(process.env.SESSION_LENGTH ?? '86400');
-    options.sessionSecret ||= process.env.SESSION_SECRET || 'insecure_session_key';
+    options.bodyLimit ??= processNumber('BODY_LIMIT', 2);
     options.allowProcessErrors ??= false;
+
+    if (typeof options.sessions === 'boolean' && options.sessions) {
+        options.sessions = {} as any;
+    }
+
+    if (typeof options.sessions === 'object') {
+        options.sessions.cookie ??= {};
+        options.sessions.cookie.maxAge ??= processNumber('SESSION_LENGTH', 86400000);
+        options.sessions.cookie.secure ??= typeof options.ssl === 'boolean' ? options.ssl : true;
+        options.sessions.name ??= processString('SESSION_NAME', 'sid');
+        options.sessions.resave ??= false;
+        options.sessions.store ??= new SessionStorage({
+            stdTTL: options.sessions.cookie.maxAge / 1000
+        });
+        options.sessions.saveUninitialized ??= true;
+        options.sessions.secret ??= processString('SESSION_SECURE', 'insecure_session_key');
+    }
 
     {
         const hostnames: string[] = options.sslHostnames
@@ -94,11 +115,11 @@ export const mergeWebApplicationDefaults = (
     }
 
     if (options.sslPrivateKey && typeof options.sslPrivateKey === 'string') {
-        options.sslPrivateKey = readFileSync(path.resolve(options.sslPrivateKey));
+        options.sslPrivateKey = readFileSync(resolve(options.sslPrivateKey));
     }
 
     if (options.sslCertificate && typeof options.sslCertificate === 'string') {
-        options.sslCertificate = readFileSync(path.resolve(options.sslCertificate));
+        options.sslCertificate = readFileSync(resolve(options.sslCertificate));
     }
 
     return options as WebApplicationOptions;
@@ -121,7 +142,7 @@ export const updateSSLOptions = async (
             console.warn('Generating certificates for: %s',
                 options.sslHostnames.join(','));
 
-            const ssl = await devcert.certificateFor(
+            const ssl = await devcert(
                 options.sslHostnames,
                 {
                     skipHostsFile: true,
