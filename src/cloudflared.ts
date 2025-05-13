@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2023-2025, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,174 +18,309 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { tunnel, Connection, bin as cloudflared, install } from 'cloudflared';
-import { lookup, setServers, getServers } from 'dns';
-import { ChildProcess } from 'child_process';
+import { bin, Connection, install, Tunnel } from 'cloudflared';
+import { getServers, lookup, setServers } from 'dns';
 import { existsSync } from 'fs';
+import { EventEmitter } from 'events';
+import { Timer } from '@gibme/timer';
 import fetch from '@gibme/fetch';
 
 export { Connection };
 
-setServers([
-    ...getServers(),
-    '1.1.1.1',
-    '8.8.8.8',
-    '9.9.9.9'
-]);
+class Cloudflared extends EventEmitter {
+    public readonly system_dns_servers: string[] = getServers();
+    public readonly dns_servers: string[];
+    private readonly dns_timer: Timer;
+    private readonly https_timer: Timer;
+    private readonly ready_timer: Timer;
 
-/** @ignore */
-const sleep = async (timeout: number) =>
-    new Promise(resolve => setTimeout(resolve, timeout));
+    constructor (public readonly local_url: string, check_interval = 2000) {
+        super();
 
-/**
- * @ignore
- * @param hostname
- */
-const checkDNS = async (hostname: string): Promise<boolean> =>
-    new Promise(resolve => {
-        lookup(hostname, (error) => {
-            if (error) {
-                return resolve(false);
+        setServers([
+            ...this.system_dns_servers,
+            '1.1.1.1',
+            '8.8.8.8',
+            '9.9.9.9'
+        ]);
+
+        this.dns_servers = getServers();
+
+        this.dns_timer = new Timer(check_interval, true);
+        this.https_timer = new Timer(check_interval, true);
+        this.ready_timer = new Timer(check_interval, true);
+
+        this.dns_timer.on('tick', async () => {
+            if (this.hostname) {
+                if (await this.dns_exists()) {
+                    this._dns_ready = true;
+
+                    this.emit('subservice', {
+                        timestamp: new Date(),
+                        url: this.url,
+                        hostname: this.hostname,
+                        connections: this.connections,
+                        type: 'dns'
+                    });
+
+                    this.dns_timer.destroy();
+                } else {
+                    this.emit('progress', {
+                        timestamp: new Date(),
+                        url: this.url,
+                        hostname: this.hostname,
+                        connections: this.connections,
+                        type: 'dns',
+                        status: 'not_ready'
+                    });
+                }
             }
-
-            return resolve(true);
         });
-    });
 
-/**
- * @ignore
- * @param url
- * @param maxRetries
- * @param timeout
- * @param attempt
- */
-const waitForDNS = async (
-    url: string,
-    maxRetries = 10,
-    timeout = 2000,
-    attempt = 0
-): Promise<boolean> => {
-    if (attempt >= maxRetries) {
-        return false;
+        this.https_timer.on('tick', async () => {
+            if (this.hostname) {
+                if (await this.https_exists()) {
+                    this._https_ready = true;
+
+                    this.emit('subservice', {
+                        timestamp: new Date(),
+                        url: this.url,
+                        hostname: this.hostname,
+                        connections: this.connections,
+                        type: 'https'
+                    });
+
+                    this.https_timer.destroy();
+                } else {
+                    this.emit('progress', {
+                        timestamp: new Date(),
+                        url: this.url,
+                        hostname: this.hostname,
+                        connections: this.connections,
+                        type: 'https',
+                        status: 'not_ready'
+                    });
+                }
+            }
+        });
+
+        this.ready_timer.on('tick', async () => {
+            if (this.ready) {
+                this.emit('ready', {
+                    timestamp: new Date(),
+                    url: this.url,
+                    hostname: this.hostname,
+                    connections: this.connections
+                });
+
+                this.ready_timer.destroy();
+            }
+        });
     }
 
-    await sleep(timeout);
+    private _url?: string;
 
-    const result = await checkDNS(new URL(url).hostname);
+    public get url (): string | undefined {
+        return this._url;
+    }
 
-    if (result) {
+    private _hostname?: string;
+
+    public get hostname (): string | undefined {
+        return this._hostname;
+    }
+
+    private _connections = new Set<Connection>();
+
+    public get connections (): Set<Connection> {
+        return this._connections;
+    }
+
+    private _dns_ready = false;
+
+    public get dns_ready (): boolean {
+        return this._dns_ready;
+    }
+
+    private _https_ready = false;
+
+    public get https_ready (): boolean {
+        return this._https_ready;
+    }
+
+    public get ready (): boolean {
+        return this.dns_ready && this.https_ready;
+    }
+
+    private _tunnel?: Tunnel;
+
+    private get tunnel (): Tunnel | undefined {
+        return this._tunnel;
+    }
+
+    /**
+     * Attempts to install the cloudflared binary
+     * @private
+     */
+    public static async install_cloudflared (): Promise<string | undefined> {
+        try {
+            if (!existsSync(bin)) {
+                await install(bin);
+            }
+
+            return bin;
+        } catch {
+        }
+    }
+
+    public on(event: 'started', listener: () => void): this;
+
+    public on(event: 'stopped', listener: () => void): this;
+
+    public on(event: 'ready', listener: (event: Cloudflared.ReadyEvent) => void): this;
+
+    public on(event: 'progress', listener: (event: Cloudflared.SubServiceProgressEvent) => void): this;
+
+    public on(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
+
+    public on (event: any, listener: (...args: any[]) => void): this {
+        return super.on(event, listener);
+    }
+
+    public once(event: 'started', listener: () => void): this;
+
+    public once(event: 'stopped', listener: () => void): this;
+
+    public once(event: 'ready', listener: (event: Cloudflared.ReadyEvent) => void): this;
+
+    public once(event: 'progress', listener: (event: Cloudflared.SubServiceProgressEvent) => void): this;
+
+    public once(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
+
+    public once (event: any, listener: (...args: any[]) => void): this {
+        return super.once(event, listener);
+    }
+
+    public off(event: 'started', listener: () => void): this;
+
+    public off(event: 'stopped', listener: () => void): this;
+
+    public off(event: 'ready', listener: (event: Cloudflared.ReadyEvent) => void): this;
+
+    public off(event: 'progress', listener: (event: Cloudflared.SubServiceProgressEvent) => void): this;
+
+    public off(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
+
+    public off (event: any, listener: (...args: any[]) => void): this {
+        return super.off(event, listener);
+    }
+
+    public async start (): Promise<boolean> {
+        if (this.tunnel) {
+            return true;
+        }
+
+        if (!await Cloudflared.install_cloudflared()) {
+            return false;
+        }
+
+        try {
+            this._tunnel = Tunnel.quick(this.local_url);
+
+            const get_url = async (): Promise<string> =>
+                new Promise(resolve => this.tunnel?.once('url', resolve));
+
+            const get_connection = async (): Promise<Connection> =>
+                new Promise(resolve => this.tunnel?.once('connected', resolve));
+
+            this._url = await get_url();
+
+            this._connections.clear();
+            this._connections.add(await get_connection());
+
+            this._hostname = new URL(this._url).hostname;
+
+            this.emit('started');
+
+            return true;
+        } catch {
+            delete this._hostname;
+            this._connections.clear();
+            delete this._url;
+            delete this._tunnel;
+
+            return false;
+        }
+    }
+
+    public async stop (): Promise<boolean> {
+        this.dns_timer.destroy();
+        this.https_timer.destroy();
+        this.ready_timer.destroy();
+
+        if (!this.tunnel) {
+            return true;
+        }
+
+        const result = this.tunnel.stop();
+
+        this.emit('stopped');
+
         return result;
     }
 
-    return waitForDNS(url, maxRetries, timeout, ++attempt);
-};
-
-/**
- * Wait for HTTPs to respond over the tunnel
- *
- * @param url
- * @param maxRetries
- * @param timeout
- * @param attempt
- */
-const waitForHttps = async (
-    url: string,
-    maxRetries = 10,
-    timeout = 2000,
-    attempt = 0
-): Promise<boolean> => {
-    if (attempt >= maxRetries) {
-        return false;
-    }
-
-    await sleep(timeout);
-
-    try {
-        await fetch(url);
-
-        return true;
-    } catch (error: any) {
-        if (error.toString().toLowerCase().includes('ENOTFOUND')) {
-            return waitForHttps(url, maxRetries, timeout, ++attempt);
-        }
-
-        return false;
-    }
-};
-
-/**
- * Installs the cloudflared binary if it is not already installed
- */
-export const installCloudflared = async (): Promise<string | undefined> => {
-    try {
-        if (!existsSync(cloudflared)) {
-            await install(cloudflared);
-        }
-
-        return cloudflared;
-    } catch {
-
-    }
-};
-
-/**
- * Starts a cloudflared tunnel and waits the maximum number of retries
- * for DNS to resolve otherwise the state is "unknown"
- *
- * @param localURL
- * @param maxRetries
- * @param timeout
- */
-const startCloudflaredTunnel = async (
-    localURL: string,
-    maxRetries = 10,
-    timeout = 2000
-): Promise<{
-    url: string,
-    connections: Connection[],
-    child: ChildProcess,
-    stop: () => Promise<boolean>
-} | undefined> => {
-    const cloudflared = await installCloudflared();
-
-    if (!cloudflared) {
-        return;
-    }
-
-    const _tunnel = tunnel({
-        '--url': localURL
-    });
-
-    const child = _tunnel.child;
-
-    const url = await _tunnel.url;
-
-    const connections = await Promise.all(_tunnel.connections);
-
-    const stop = async (): Promise<boolean> => {
+    /**
+     * Checks if the tunnel is responding via HTTPs
+     * @private
+     */
+    private async https_exists (): Promise<boolean> {
         try {
-            return _tunnel.stop();
+            if (this.url) {
+                await fetch.get(this.url);
+
+                return true;
+            } else {
+                return false;
+            }
         } catch {
-            return true;
+            return false;
         }
-    };
-
-    // wait until the tunnel DNS resolves
-    if (!await waitForDNS(url, maxRetries, timeout)) {
-        return;
     }
 
-    // wait until the tunnel is actually reachable
-    if (!await waitForHttps(url, maxRetries, timeout)) {
-        return;
+    /**
+     * Checks if the tunnel is responding via DNS
+     * @private
+     */
+    private async dns_exists (): Promise<boolean> {
+        return new Promise(resolve => {
+            if (this.hostname) {
+                lookup(this.hostname, error => {
+                    if (error) return resolve(false);
+
+                    return resolve(true);
+                });
+            } else {
+                return resolve(false);
+            }
+        });
+    }
+}
+
+export namespace Cloudflared {
+    export type ReadyEvent = {
+        timestamp: Date;
+        url: string;
+        hostname: string;
+        connection: Set<Connection>;
     }
 
-    return {
-        url,
-        connections,
-        child,
-        stop
-    };
-};
+    export type SubServiceReadyEvent = ReadyEvent & {
+        type: 'dns' | 'https';
+    }
 
-export default startCloudflaredTunnel;
+    export type SubServiceProgressEvent = SubServiceReadyEvent & {
+        status: 'not_ready'
+    }
+}
+
+export default Cloudflared;

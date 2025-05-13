@@ -18,22 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { describe, it, after, before } from 'mocha';
+import WebServer, { Logger } from '../src';
 import fetch, { CookieJar } from '@gibme/fetch';
-import WebServer from '../src/WebServer';
-import assert from 'assert';
+import { after, before, describe, it } from 'mocha';
 import WebSocket from 'ws';
-import Logger from '@gibme/logger';
-
-declare module 'express-session' {
-    interface SessionData {
-        body?: any;
-    }
-}
+import assert from 'assert';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
-        bindPort: 12345,
+        port: 12345,
         sessions: true
     });
 
@@ -71,7 +64,7 @@ describe('Unit Tests', async () => {
     describe('Cloudflared', async () => {
         it('Start Tunnel', async function () {
             try {
-                const binary = await app.installCloudflared();
+                const binary = await app.tunnel.install();
 
                 if (!binary) {
                     return this.skip();
@@ -83,25 +76,33 @@ describe('Unit Tests', async () => {
             }
 
             try {
-                const tunnel = await app.tunnelStart();
+                const tunnel = await app.tunnel.start();
 
                 if (!tunnel) {
                     return this.skip();
                 }
 
-                Logger.info('Tunnel URL: %s', app.tunnelUrl);
+                Logger.info('Tunnel URL: %s', app.tunnel.url);
                 Logger.info('URL: %s', app.url);
             } catch {
-                await app.tunnelStop();
+                await app.tunnel.stop();
 
                 return this.skip();
             }
         });
 
         it('Using Tunnel?', async function () {
-            if (!app.tunnelUrl) {
+            if (!app.tunnel.url) {
                 this.skip();
             }
+        });
+
+        it('Connections?', async function () {
+            if (!app.tunnel.url) {
+                return this.skip();
+            }
+
+            assert.notEqual(app.tunnel.connections.length, 0);
         });
     });
 
@@ -113,7 +114,7 @@ describe('Unit Tests', async () => {
 
             assert.ok(response.ok);
 
-            const json: {success: boolean} = await response.json();
+            const json: { success: boolean } = await response.json();
 
             assert.ok(json.success);
         });
