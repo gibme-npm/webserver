@@ -435,10 +435,10 @@ export function WebServer (
 
     assign('tunnel', {
         stop: async () => {},
-        start: async (): Promise<boolean> => {
+        start: async (timeout = 30000): Promise<boolean> => {
             assignTunnel('binary', await Cloudflared.install_cloudflared());
 
-            return new Promise((resolve, reject) => {
+            return new Promise(resolve => {
                 const tunnel = new Cloudflared(instance.localUrl);
 
                 tunnel.on('ready', () => {
@@ -462,9 +462,13 @@ export function WebServer (
                     return resolve(true);
                 });
 
+                tunnel.on('timeout', () => {
+                    return resolve(false);
+                });
+
                 (async () => {
-                    if (!await tunnel.start()) {
-                        return reject(new Error('Failed to start Cloudflared tunnel'));
+                    if (!await tunnel.start(timeout)) {
+                        return resolve(false);
                     }
                 })();
             });
@@ -673,8 +677,9 @@ export namespace WebServer {
         install: () => Promise<string | undefined>;
         /**
          * Starts a cloudflared tunnel
+         * @param timeout The timeout in milliseconds to wait for the tunnel to start. Defaults to 30000.
          */
-        start: () => Promise<boolean>;
+        start: (timeout?: number) => Promise<boolean>;
         /**
          * Stops the cloudflared tunnel
          */

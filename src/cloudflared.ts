@@ -33,6 +33,7 @@ class Cloudflared extends EventEmitter {
     private readonly dns_timer: Timer;
     private readonly https_timer: Timer;
     private readonly ready_timer: Timer;
+    private _timeout?: NodeJS.Timeout;
 
     constructor (public readonly local_url: string, check_interval = 2000) {
         super();
@@ -183,6 +184,8 @@ class Cloudflared extends EventEmitter {
 
     public on(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
 
+    public on(event: 'timeout', listener: (error: Error) => void): this;
+
     public on (event: any, listener: (...args: any[]) => void): this {
         return super.on(event, listener);
     }
@@ -196,6 +199,8 @@ class Cloudflared extends EventEmitter {
     public once(event: 'progress', listener: (event: Cloudflared.SubServiceProgressEvent) => void): this;
 
     public once(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
+
+    public once(event: 'timeout', listener: (error: Error) => void): this;
 
     public once (event: any, listener: (...args: any[]) => void): this {
         return super.once(event, listener);
@@ -211,11 +216,13 @@ class Cloudflared extends EventEmitter {
 
     public off(event: 'subservice', listener: (event: Cloudflared.SubServiceReadyEvent) => void): this;
 
+    public off(event: 'timeout', listener: (error: Error) => void): this;
+
     public off (event: any, listener: (...args: any[]) => void): this {
         return super.off(event, listener);
     }
 
-    public async start (): Promise<boolean> {
+    public async start (timeout = 30000): Promise<boolean> {
         if (this.tunnel) {
             return true;
         }
@@ -224,45 +231,57 @@ class Cloudflared extends EventEmitter {
             return false;
         }
 
+        this._timeout = setTimeout(() => {
+            if (!this.ready) {
+                this.stop();
+
+                this.emit('timeout',
+                    new Error('Tunnel could not be started within the given timeout.'));
+            }
+        }, timeout);
+
         try {
             this._tunnel = Tunnel.quick(this.local_url);
 
-            const get_url = async (): Promise<string> =>
-                new Promise(resolve => this.tunnel?.once('url', resolve));
+            this._tunnel.once('url', url => {
+                this._url = url;
+                this._hostname = new URL(url).hostname;
+            });
 
-            const get_connection = async (): Promise<Connection> =>
-                new Promise(resolve => this.tunnel?.once('connected', resolve));
-
-            this._url = await get_url();
-
-            this._connections.clear();
-            this._connections.add(await get_connection());
-
-            this._hostname = new URL(this._url).hostname;
+            this._tunnel.once('connected', connection => {
+                this._connections.clear();
+                this._connections.add(connection);
+            });
 
             this.emit('started');
 
             return true;
         } catch {
-            delete this._hostname;
-            this._connections.clear();
-            delete this._url;
-            delete this._tunnel;
+            this.cleanup();
 
             return false;
         }
     }
 
-    public async stop (): Promise<boolean> {
+    private cleanup (): void {
         this.dns_timer.destroy();
         this.https_timer.destroy();
         this.ready_timer.destroy();
+        delete this._hostname;
+        this._connections.clear();
+        delete this._url;
+    }
+
+    public async stop (): Promise<boolean> {
+        this.cleanup();
 
         if (!this.tunnel) {
             return true;
         }
 
         const result = this.tunnel.stop();
+
+        delete this._tunnel;
 
         this.emit('stopped');
 
