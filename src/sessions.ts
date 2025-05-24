@@ -24,7 +24,7 @@ export { Store } from 'express-session';
 
 /**
  * Implements the Storage class for express-session using
- * a `Cache` of @gibme/cache as the underlying storage provider
+ * a `Cache` of memory-based cache as the underlying storage provider
  */
 export default class SessionStorage extends Store {
     private readonly cache: Cache;
