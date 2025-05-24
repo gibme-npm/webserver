@@ -319,35 +319,36 @@ export function WebServer (
             try {
                 const [type, token] = authorization.split(' ', 2);
 
-                if (type === 'Basic') {
+                if (type.toLowerCase() === 'basic') {
                     const [username, password] = Buffer.from(token, 'base64').toString().split(':');
 
+                    if (username && password) {
+                        request.authorization = {
+                            type: 'Basic',
+                            basic: {
+                                username,
+                                password
+                            }
+                        };
+                    }
+                } else if (type.toLowerCase() === 'bearer') {
                     request.authorization = {
-                        type,
-                        basic: {
-                            username,
-                            password
+                        type: 'Bearer',
+                        bearer: {
+                            token
                         }
                     };
-                } else if (type === 'Bearer') {
+
                     if (token.includes('.')) {
                         const [header, payload, signature] = token.split('.');
 
-                        request.authorization = {
-                            type,
-                            jwt: {
+                        if (header && payload && signature) {
+                            request.authorization.jwt = {
                                 header: JSON.parse(Buffer.from(header, 'base64url').toString()),
                                 payload: JSON.parse(Buffer.from(payload, 'base64url').toString()),
                                 signature
-                            }
-                        };
-                    } else {
-                        request.authorization = {
-                            type,
-                            bearer: {
-                                token
-                            }
-                        };
+                            };
+                        }
                     }
                 }
             } catch {}
