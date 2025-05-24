@@ -263,21 +263,20 @@ class Cloudflared extends EventEmitter {
         }
     }
 
-    private cleanup (): void {
-        this.dns_timer.destroy();
-        this.https_timer.destroy();
-        this.ready_timer.destroy();
-        delete this._hostname;
-        this._connections.clear();
-        delete this._url;
-    }
-
     public async stop (): Promise<boolean> {
         this.cleanup();
 
         if (!this.tunnel) {
             return true;
         }
+
+        try {
+            this.tunnel.process.kill('SIGINT');
+        } catch {}
+
+        try {
+            this.tunnel.process.kill();
+        } catch {}
 
         const result = this.tunnel.stop();
 
@@ -286,6 +285,15 @@ class Cloudflared extends EventEmitter {
         this.emit('stopped');
 
         return result;
+    }
+
+    private cleanup (): void {
+        this.dns_timer.destroy();
+        this.https_timer.destroy();
+        this.ready_timer.destroy();
+        delete this._hostname;
+        this._connections.clear();
+        delete this._url;
     }
 
     /**

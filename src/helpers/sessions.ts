@@ -20,7 +20,14 @@
 
 import { SessionData, Store } from 'express-session';
 import Cache from 'node-cache';
+
 export { Store } from 'express-session';
+
+declare module 'express-session' {
+    interface SessionData {
+        [key: string]: any;
+    }
+}
 
 /**
  * Implements the Storage class for express-session using
@@ -148,10 +155,9 @@ export default class SessionStorage extends Store {
     public touch (sid: string, _session: SessionData, callback: () => void) {
         try {
             this.cache.ttl(sid, this.options.stdTTL ?? 86400);
-        } catch {}
+        } catch {
+        }
 
         return callback();
     }
 }
-
-export { SessionStorage };

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2024, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2018-2025, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,15 @@ import fetch, { CookieJar } from '@gibme/fetch';
 import { after, before, describe, it } from 'mocha';
 import WebSocket from 'ws';
 import assert from 'assert';
+import { v7 as uuid } from 'uuid';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
         port: 12345,
         sessions: true
     });
+
+    const token = uuid();
 
     app.get('/', (_request, response) => {
         return response.json({ success: true });
@@ -50,6 +53,19 @@ describe('Unit Tests', async () => {
         });
     });
 
+    app.ws('/wss/:id', (socket, request) => {
+        const { id } = request.params;
+
+        socket.send(id);
+    });
+
+    app.protected.setAuthenticationProvider(async request =>
+        request.authorization?.bearer?.token === token);
+
+    app.protected.get('/protected', (_, response) => {
+        return response.status(200).send();
+    });
+
     before(async () => {
         await app.start();
 
@@ -58,7 +74,9 @@ describe('Unit Tests', async () => {
     });
 
     after(async () => {
-        await app.stop();
+        try {
+            await app.stop();
+        } catch {}
     });
 
     describe('Cloudflared', async () => {
@@ -146,6 +164,24 @@ describe('Unit Tests', async () => {
         });
     });
 
+    describe('Protected Tests', async () => {
+        it('Cannot Access Without Token', async () => {
+            const response = await fetch.get(`${app.url}/protected`);
+
+            assert.ok(!response.ok);
+        });
+
+        it('Can Access With Token', async () => {
+            const response = await fetch.get(`${app.url}/protected`, {
+                headers: {
+                    authorization: `Bearer ${token}`
+                }
+            });
+
+            assert.ok(response.ok);
+        });
+    });
+
     describe('WebSockets', async () => {
         it('Simple Test', async () => {
             return new Promise((resolve, reject) => {
@@ -169,6 +205,58 @@ describe('Unit Tests', async () => {
 
                 client.once('open', () => {
                     client.send(message);
+                });
+            });
+        });
+
+        it('Advanced Test', async () => {
+            return new Promise((resolve, reject) => {
+                const client = new WebSocket(`${app.url}/wss`);
+
+                const message = JSON.stringify({ test: true, value: 9, str: 'string' });
+
+                client.once('error', error => {
+                    client.close();
+
+                    return reject(error);
+                });
+
+                client.once('message', msg => {
+                    client.close();
+
+                    if (msg.toString() === message) {
+                        return resolve();
+                    } else {
+                        return reject(new Error('Mismatched payload'));
+                    }
+                });
+
+                client.once('open', () => {
+                    client.send(message);
+                });
+            });
+        });
+
+        it('Advanced Test w/ Params', async () => {
+            return new Promise((resolve, reject) => {
+                const id = uuid();
+
+                const client = new WebSocket(`${app.url}/wss/${id}`);
+
+                client.once('error', error => {
+                    client.close();
+
+                    return reject(error);
+                });
+
+                client.once('message', msg => {
+                    client.close();
+
+                    if (msg.toString() === id) {
+                        return resolve();
+                    } else {
+                        return reject(new Error('Mismatched payload'));
+                    }
                 });
             });
         });

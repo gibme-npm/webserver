@@ -22,147 +22,22 @@ import { createServer as createHTTPServer } from 'http';
 import { createServer as createHTTPSServer, Server } from 'https';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import Express, { Application as ExpressApplication } from 'express';
-import ExpressWS from 'express-ws';
-import type {
-    Server as WebSocketServer,
-    ServerOptions as WebSocketServerOptions,
-    WebSocket as WebSocketInstance
-} from 'ws';
-import ExpressSession, { SessionOptions } from 'express-session';
+import express from 'express';
+import WebSocket from './helpers/websocket';
+import expressSession from 'express-session';
 import type { PathParams } from 'express-serve-static-core';
 import Logger from '@gibme/logger';
 import Helmet, { HelmetOptions } from 'helmet';
 import Compression from 'compression';
-import SessionStorage from './sessions';
-import Cloudflared, { Connection } from './cloudflared';
+import Middleware, { AuthenticationProvider, LogEntry, XMLParserOptions, XMLValidatorOptions } from './middleware';
+import SessionStorage from './helpers/sessions';
+import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
-import { v4 as uuid } from 'uuid';
 
 export { Request, Response, Router } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
-
-declare global {
-    namespace Express {
-        interface Request {
-            /**
-             * The unique request ID
-             */
-            id: string;
-            /**
-             * Auto-resolves the actual client IP address via the request headers from cloudflare
-             * specified headers, x-forwarded-for, etc.
-             */
-            remoteIp: string;
-            /**
-             * Authorization information decoded from the request headers.
-             */
-            authorization?: {
-                /**
-                 * The type of authorization used
-                 */
-                type: 'Basic' | 'Bearer';
-                /**
-                 * Basic authorization information
-                 */
-                basic?: {
-                    /**
-                     * The username supplied
-                     */
-                    username: string;
-                    /**
-                     * The password supplied
-                     */
-                    password: string;
-                };
-                /**
-                 * Bearer authorization information
-                 */
-                bearer?: {
-                    /**
-                     * The token supplied
-                     */
-                    token: string;
-                }
-                /**
-                 * JWT authorization information
-                 */
-                jwt?: {
-                    /**
-                     * The JWT header
-                     */
-                    header: {
-                        alg: string;
-                        typ?: string;
-                    };
-                    /**
-                     * The JWT payload
-                     */
-                    payload: Record<string, any>;
-                    /**
-                     * The JWT signature
-                     */
-                    signature: string;
-                }
-            }
-        }
-    }
-}
-
-declare module 'express-session' {
-    interface SessionData {
-        [key: string]: any;
-    }
-}
-
-/**
- * The default content security header policy
- * @ignore
- */
-const ContentSecurityPolicy: Record<string, string> = {
-    'Content-Security-Policy': 'default-src \'self\''
-};
-
-/**
- * Currently recommended headers to return with responses
- * @ignore
- */
-const RecommendedHeaders: Record<string, string> = {
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, User-Agent',
-    'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH',
-    'Cache-Control': 'max-age=30, public',
-    'Referrer-Policy': 'no-referrer',
-    'Feature-Policy': [
-        'geolocation none',
-        'notifications none',
-        'push none',
-        'sync-xhr none',
-        'microphone none',
-        'camera none',
-        'magnetometer none',
-        'gyroscope none',
-        'speaker self',
-        'vibrate none',
-        'fullscreen self',
-        'payment none'
-    ].join(';'),
-    'Permissions-Policy': [
-        'geolocation=()',
-        'midi=()',
-        'notifications=()',
-        'push=()',
-        'sync-xhr=()',
-        'microphone=()',
-        'camera=()',
-        'magnetometer=()',
-        'gyroscope=()',
-        'speaker=(self)',
-        'vibrate=()',
-        'fullscreen=(self)',
-        'payment=()'
-    ].join(', ')
-};
+export { default as multer } from 'multer';
 
 /**
  * Merges configuration options with their default values
@@ -171,10 +46,10 @@ const RecommendedHeaders: Record<string, string> = {
  */
 const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.Options => {
     options.suppressProcessErrors ??= true;
-    options.helmet ??= {};
-    options.hostname ??= '0.0.0.0';
+    options.helmet ??= false;
+    options.host ??= '0.0.0.0';
     options.backlog ??= 511;
-    options.autoRecommendedHeaders ??= true;
+    options.autoRecommendedHeaders ??= false;
     options.autoContentSecurityPolicyHeaders ??= false;
     options.autoHandle404 ??= true;
     options.autoHandleOptions ??= true;
@@ -182,10 +57,18 @@ const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.
     options.corsOrigin ??= '*';
     options.ssl ??= false;
     options.port ??= options.ssl ? 443 : 80;
-    options.requestLogging ??= false;
+    options.logging ??= false;
     options.autoStartCloudflared ??= false;
     options.bodyLimit ??= 2;
     options.sessions ??= false;
+    options.xml ??= {};
+    options.xml.parserOptions ??= {};
+    options.xml.validatorOptions ??= {};
+    options.autoParseJSON ??= true;
+    options.autoParseRaw ??= true;
+    options.autoParseText ??= true;
+    options.autoParseURLEncoded ??= true;
+    options.autoParseXML ??= true;
 
     if (typeof options.sessions === 'boolean' && options.sessions) {
         options.sessions = {} as any;
@@ -242,8 +125,12 @@ export function WebServer (
         });
     }
 
-    const app = Express();
+    const app = express();
     const instance = (app as any) as WebServer.Application;
+
+    // start tracking the response time as early as possible
+    instance.use(Middleware.ResponseTime());
+
     const assign = (property: string, value: any) => {
         (instance as any)[property] = value;
     };
@@ -259,174 +146,138 @@ export function WebServer (
         assign('server', server);
     }
 
-    assign('hostname', options.hostname);
+    assign('host', options.host);
     assign('port', options.port);
     assign('ssl', typeof options.ssl === 'object' || options.ssl);
     assign('localUrl', [
         `http${options.ssl ? 's' : ''}://`,
-        options.hostname === '0.0.0.0' ? '127.0.0.1' : options.hostname,
+        options.host === '0.0.0.0' ? '127.0.0.1' : options.host,
         `:${options.port}`
     ].join(''));
     assign('url', instance.localUrl);
 
     // Set up the WebSocket methods
     {
-        const ws = ExpressWS(app, instance.server, {
+        const ws = WebSocket(app, instance.server, {
             wsOptions: options.wsOptions
         });
 
         assign('wsServer', ws.getWss());
-
-        instance.ws = ws.app.ws;
+        assign('ws', ws.app.ws);
+        assign('wsApplyTo', ws.applyTo);
     }
 
-    // Set up automatic body parsing
-    instance.use(Express.json({ limit: `${options.bodyLimit}mb` }));
-    instance.use(Express.urlencoded({ limit: `${options.bodyLimit}mb`, extended: true }));
-    instance.use(Express.text({ limit: `${options.bodyLimit}mb` }));
-    instance.use(Express.raw({ limit: `${options.bodyLimit}mb` }));
+    const standardParserOptions = {
+        limit: `${options.bodyLimit}mb`,
+        inflate: true
+    };
 
-    // Set up the session middleware if specified
+    // Add our middlewares
+    instance.use(Middleware.RequestId());
+    instance.use(Middleware.RemoteIp());
+    instance.use(Middleware.Authorization());
+    instance.use(Middleware.Cors(options.corsOrigin));
     if (typeof options.sessions === 'object') {
-        instance.use(ExpressSession(options.sessions));
+        instance.use(expressSession(options.sessions));
     }
+    instance.use(Middleware.Logging(options.logging));
+    if (options.autoParseJSON) {
+        instance.use(express.json(standardParserOptions));
+    }
+    if (options.autoParseURLEncoded) {
+        instance.use(express.urlencoded({ ...standardParserOptions, extended: true }));
+    }
+    if (options.autoParseRaw) {
+        instance.use(express.raw(standardParserOptions));
+    }
+    if (options.autoParseText || options.autoParseXML) {
+        const type: string[] = [];
 
-    // Add a request ID
-    instance.use((request, response, next) => {
-        request.id = uuid();
-
-        response.setHeader('X-Request-ID', request.id);
-        response.removeHeader('x-powered-by');
-
-        return next();
-    });
-
-    // Resolve the remote IP address
-    instance.use((request, _, next) => {
-        request.remoteIp = request.header('cf-connecting-ipv6') ||
-            request.header('x-forwarded-for') ||
-            request.header('cf-connecting-ip') ||
-            request.ip || '0.0.0.0';
-
-        return next();
-    });
-
-    // Attempt to decode the authorization header if set
-    instance.use((request, _, next) => {
-        const authorization = request.header('authorization');
-
-        if (authorization) {
-            try {
-                const [type, token] = authorization.split(' ', 2);
-
-                if (type.toLowerCase() === 'basic') {
-                    const [username, password] = Buffer.from(token, 'base64').toString().split(':');
-
-                    if (username && password) {
-                        request.authorization = {
-                            type: 'Basic',
-                            basic: {
-                                username,
-                                password
-                            }
-                        };
-                    }
-                } else if (type.toLowerCase() === 'bearer') {
-                    request.authorization = {
-                        type: 'Bearer',
-                        bearer: {
-                            token
-                        }
-                    };
-
-                    if (token.includes('.')) {
-                        const [header, payload, signature] = token.split('.');
-
-                        if (header && payload && signature) {
-                            request.authorization.jwt = {
-                                header: JSON.parse(Buffer.from(header, 'base64url').toString()),
-                                payload: JSON.parse(Buffer.from(payload, 'base64url').toString()),
-                                signature
-                            };
-                        }
-                    }
-                }
-            } catch {}
+        if (options.autoParseText) {
+            type.push('text/plain');
         }
 
-        return next();
-    });
+        if (options.autoParseXML) {
+            type.push('*/xml', 'application/*+xml');
+        }
 
-    // Set the CORS header if set in the options
-    if (options.corsOrigin.length !== 0) {
-        instance.use((_, response, next) => {
-            response.header('Access-Control-Allow-Origin', options.corsOrigin.trim());
-            response.header('X-Requested-With', '*');
-            response.header('Access-Control-Allow-Headers', '*');
-            response.header('Access-Control-Allow-Methods', '*');
-
-            return next();
-        });
+        instance.use(express.text({ ...standardParserOptions, type }));
     }
-
-    // If using our recommended headers, add them to the application
-    if (options.autoRecommendedHeaders) {
-        instance.use(Helmet(options.helmet));
-
-        instance.use((_, response, next) => {
-            Object.entries(RecommendedHeaders)
-                .forEach(([key, value]) => response.header(key, value));
-
-            return next();
-        });
+    if (options.autoParseXML) {
+        instance.use(Middleware.XMLParser(options.xml.parserOptions, options.xml.validatorOptions));
     }
-
-    // If using the CSP headers, add them to the application
-    if (options.autoContentSecurityPolicyHeaders) {
-        instance.use((_, response, next) => {
-            Object.entries(ContentSecurityPolicy)
-                .forEach(([key, value]) => response.header(key, value));
-
-            return next();
-        });
-    }
-
-    // Enable compression if set in the options
     if (options.compression) {
         instance.use(Compression());
     }
+    if (options.helmet) {
+        instance.use(Helmet(typeof options.helmet === 'object' ? options.helmet : {}));
+    }
+    if (options.autoRecommendedHeaders) {
+        instance.use(Middleware.RecommendedHeaders());
+    }
+    if (options.autoContentSecurityPolicyHeaders) {
+        instance.use(Middleware.ContentSecurityPolicy());
+    }
 
-    // Set up our request logging middleware
-    if (options.requestLogging) {
-        instance.use((request, _, next) => {
-            const { id, ip, method, url, remoteIp } = request;
+    // Set up the protected router interface
+    {
+        let provider: AuthenticationProvider | undefined;
 
-            const entry: Record<string, any> = {
-                id,
-                ip: ip ?? '',
-                remoteIp: remoteIp ?? '',
-                method,
-                url
-            };
+        assign('protected', {
+            setAuthenticationProvider: (new_provider?: AuthenticationProvider) => {
+                provider = new_provider;
+            },
+            get: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
 
-            if (options.requestLogging === 'full') {
-                entry.headers = request.headers;
+                return instance.get(route, ...middlewares);
+            },
+            post: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
 
-                switch (method) {
-                    case 'POST':
-                    case 'PATCH':
-                    case 'PUT':
-                        entry.body = request.body;
-                        break;
-                    default:
-                        break;
-                }
+                return instance.post(route, ...middlewares);
+            },
+            put: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.put(route, ...middlewares);
+            },
+            patch: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.patch(route, ...middlewares);
+            },
+            delete: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.delete(route, ...middlewares);
+            },
+            head: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.head(route, ...middlewares);
+            },
+            options: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.options(route, ...middlewares);
+            },
+            connect: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.connect(route, ...middlewares);
+            },
+            trace: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.trace(route, ...middlewares);
+            },
+            all: (route: string, ...middlewares: express.RequestHandler[]) => {
+                middlewares.unshift(Middleware.ProtectedRouter(provider));
+
+                return instance.all(route, ...middlewares);
             }
-
-            Logger.debug(JSON.stringify(entry));
-
-            return next();
-        });
+        } as WebServer.ProtectedRouter);
     }
 
     // Set up the Tunnel interface
@@ -475,7 +326,7 @@ export function WebServer (
             });
         },
         install: Cloudflared.install_cloudflared
-    });
+    } as WebServer.Tunnel);
 
     /**
      * Serves static files from the specified path
@@ -484,7 +335,7 @@ export function WebServer (
      * @param options
      */
     instance.static = (path: PathParams = '/', local_path: string, options?: ServeStaticOptions) => {
-        app.use(path, Express.static(resolve(local_path), options));
+        app.use(path, express.static(resolve(local_path), options));
     };
 
     /**
@@ -492,13 +343,13 @@ export function WebServer (
      */
     instance.start = async (): Promise<void> => {
         if (options.autoHandleOptions) {
-            instance.options('*', (_, response) => {
+            instance.options('*path', (_, response) => {
                 return response.status(200).send();
             });
         }
 
         if (options.autoHandle404) {
-            instance.all('*', (_, response) => {
+            instance.all('*path', (_, response) => {
                 return response.status(404).send();
             });
         }
@@ -509,7 +360,7 @@ export function WebServer (
                     return reject(error);
                 });
 
-                instance.server.listen(options.port, options.hostname, options.backlog, () => {
+                instance.server.listen(options.port, options.host, options.backlog, () => {
                     instance.server.removeAllListeners('error');
 
                     instance.server.on('error', error => instance.emit('error', error));
@@ -567,6 +418,32 @@ export namespace WebServer {
          */
         autoHandleOptions: boolean;
         /**
+         * Whether we will automatically parse JSON request bodies
+         * @default true
+         */
+        autoParseJSON: boolean;
+        /**
+         * Whether we will automatically parse RAW request bodies
+         * @default true
+         */
+        autoParseRaw: boolean;
+        /**
+         * Whether we will automatically parse Text request bodies
+         * @default true
+         */
+        autoParseText: boolean;
+        /**
+         * Whether we will automatically parse URLEncoded request bodies
+         * @default true
+         */
+        autoParseURLEncoded: boolean;
+        /**
+         * Whether we will automatically parse XML request bodies
+         *
+         * @default true
+         */
+        autoParseXML: boolean;
+        /**
          * Whether we should return the default list of recommended headers
          * with every request
          * @default true
@@ -599,32 +476,38 @@ export namespace WebServer {
         corsOrigin: string;
         /**
          * Helmet module options
+         * @default false
          */
-        helmet: HelmetOptions;
+        helmet: HelmetOptions | boolean;
         /**
          * The host address to bind to
          * @default 0.0.0.0 (all)
          */
-        hostname: string;
+        host: string;
         /**
          * The bind port for the server
          * @default 443 if ssl, 80 if non-ssl
          */
         port: number;
         /**
-         * Whether we should log requests to file/console
+         * Defines how request logging is handled.
          *
-         * Note: if set to `full` then the headers are also logged as well as the request body (if POST/PATCH/PUT)
+         * For `true`: High level information of each Request will be logged as `debug` to the console/file
+         * For `full`: Headers and the Request body (if POST/PATCH/PUT) are also provided in the log entry
+         * For callback: Full log entries are provided to the specified callback method, and the entry will
+         * not be passed to the standard logging facility.
          *
          * @default false
          */
-        requestLogging: boolean | 'full';
+        logging: boolean | 'full' | ((entry: LogEntry) => Promise<void> | void);
         /**
          * Whether we enable session support
          *
          * Note: At a minimum, a secret must be supplied if options are specified
+         *
+         * @default false
          */
-        sessions: SessionOptions | boolean;
+        sessions: expressSession.SessionOptions | boolean;
         /**
          * Whether SSL should be enabled
          * @default false
@@ -646,22 +529,21 @@ export namespace WebServer {
         /**
          * If set to true, allows node to crash via thrown exceptions
          * If set to false (or unset), thrown exceptions are swallowed and logged automatically
+         * @default true
          */
         suppressProcessErrors: boolean;
         /**
          * WebSocket server options
          */
-        wsOptions: WebSocketServerOptions;
+        wsOptions: WebSocket.ServerOptions;
+        /**
+         * Automatic XML body parser handling options
+         */
+        xml: {
+            parserOptions?: XMLParserOptions;
+            validatorOptions?: XMLValidatorOptions;
+        }
     }
-
-    /**
-     * The WebSocket Request Handler callback
-     * @param socket
-     * @param request
-     * @param next
-     */
-    export type WebSocketRequestHandler =
-        (socket: WebSocketInstance, request: Express.Request, next: Express.NextFunction) => void;
 
     export type Tunnel = {
         /**
@@ -691,11 +573,30 @@ export namespace WebServer {
         readonly url?: string;
     }
 
-    export type Application = ExpressApplication & {
+    export type ProtectedRouter = {
+        /**
+         * Sets the authentication provider to use for protected routes.
+         *
+         * @param provider
+         */
+        setAuthenticationProvider: (provider?: AuthenticationProvider) => void;
+        get: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        post: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        put: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        patch: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        delete: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        head: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        options: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        connect: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        trace: (route: string, ...middlewares: express.RequestHandler[]) => void;
+        all: (route: string, ...middlewares: express.RequestHandler[]) => void;
+    }
+
+    export type Application = express.Application & {
         /**
          * The hostname the server is bound to
          */
-        readonly hostname: string;
+        readonly host: string;
         /**
          * The local URL of the server
          */
@@ -704,6 +605,11 @@ export namespace WebServer {
          * The port the server is bound to
          */
         readonly port: number;
+        /**
+         * Access to easy to use protected routes that automatically insert middleware
+         * that checks with the authentication provider for permitted access.
+         */
+        readonly protected: ProtectedRouter;
         /**
          * The underlying HTTP/s server instance
          */
@@ -740,11 +646,17 @@ export namespace WebServer {
          * @param route
          * @param middlewares
          */
-        ws: (route: PathParams, ...middlewares: WebSocketRequestHandler[]) => void;
+        ws: WebSocket.RequestHandler;
+        /**
+         * Applies the WebSocket middleware to the specified Router
+         * @param route
+         * @param mountPath
+         */
+        wsApplyTo: WebSocket.ApplyTo;
         /**
          * Returns the WebSocket.Server instance attached to the application
          */
-        readonly wsServer: WebSocketServer
+        readonly wsServer: WebSocket.Server
     }
 
     export const create = WebServer;
