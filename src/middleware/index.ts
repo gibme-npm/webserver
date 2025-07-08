@@ -22,12 +22,14 @@ import Logging from './logging';
 import RequestId from './request_id';
 import RemoteIp from './remote_ip';
 import Authorization from './authorization';
+import Cookies from './cookies';
 import Cors from './cors';
 import RecommendedHeaders from './recommended_headers';
 import ContentSecurityPolicy from './csp_headers';
 import ProtectedRouter from './protected';
 import ResponseTime from './response_time';
 import XMLParser from './xml';
+
 export { LogEntry } from './logging';
 export { AuthenticationProvider } from './protected';
 export { XMLParserOptions, XMLValidatorOptions } from './xml';
@@ -37,6 +39,7 @@ export default {
     RequestId,
     RemoteIp,
     Authorization,
+    Cookies,
     Cors,
     RecommendedHeaders,
     ContentSecurityPolicy,

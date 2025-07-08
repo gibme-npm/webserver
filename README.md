@@ -25,6 +25,7 @@ Features include:
   * `request.ip`
 * Session support via in-memory data store
   * Alternatively, specify a data store
+* Cookie parsing support, including signed cookies
 * Injects a unique request ID for every single request both in the log and in the response as `X-Request-ID` and `request.id`
 * Injects the amount of time elapsed between when the request is received and when the response headers are written in `X-Response-Time` which is also logged in the log entry.
 * Simple support for "protected" routes that allow for specifying a simple AuthenticationProvider to "protect" those routes

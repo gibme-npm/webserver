@@ -33,6 +33,7 @@ import Middleware, { AuthenticationProvider, LogEntry, XMLParserOptions, XMLVali
 import SessionStorage from './helpers/sessions';
 import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
+import type { CipherKey } from 'crypto';
 
 export { Request, Response, Router } from 'express';
 export { Logger } from '@gibme/logger';
@@ -69,6 +70,11 @@ const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.
     options.autoParseText ??= true;
     options.autoParseURLEncoded ??= true;
     options.autoParseXML ??= true;
+    options.cookieSecret ??= [];
+
+    if (!Array.isArray(options.cookieSecret)) {
+        options.cookieSecret = [options.cookieSecret];
+    }
 
     if (typeof options.sessions === 'boolean' && options.sessions) {
         options.sessions = {} as any;
@@ -85,6 +91,12 @@ const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.
         options.sessions.store ??= new SessionStorage({
             stdTTL: options.sessions.cookie.maxAge / 1000
         });
+
+        if (Array.isArray(options.sessions.secret)) {
+            options.cookieSecret.push(...options.sessions.secret.map(secret => secret.toString()));
+        } else {
+            options.cookieSecret.push(options.sessions.secret.toString());
+        }
     }
 
     if (typeof options.ssl === 'object') {
@@ -177,6 +189,7 @@ export function WebServer (
     instance.use(Middleware.RemoteIp());
     instance.use(Middleware.Authorization());
     instance.use(Middleware.Cors(options.corsOrigin));
+    instance.use(Middleware.Cookies(options.cookieSecret));
     if (typeof options.sessions === 'object') {
         instance.use(expressSession(options.sessions));
     }
@@ -470,6 +483,10 @@ export namespace WebServer {
          */
         compression: boolean;
         /**
+         * Secret(s) used for cookie signing
+         */
+        cookieSecret: CipherKey | CipherKey[];
+        /**
          * The CORS domain name to report in requests
          * @default * (all)
          */
@@ -606,7 +623,7 @@ export namespace WebServer {
          */
         readonly port: number;
         /**
-         * Access to easy to use protected routes that automatically insert middleware
+         * Access to easy-to-use protected routes that automatically insert middleware
          * that checks with the authentication provider for permitted access.
          */
         readonly protected: ProtectedRouter;

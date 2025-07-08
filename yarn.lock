@@ -251,6 +251,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/cookie-signature@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@types/cookie-signature/-/cookie-signature-1.1.2.tgz#a975af3d4ea0b86d39d2dc5e46f4bae605ea1204"
+  integrity sha512-2OhrZV2LVnUAXklUFwuYUTokalh/dUb8rqt70OW6ByMSxYpauPZ+kfNLknX3aJyjY5iu8i3cUyoLZP9Fn37tTg==
+  dependencies:
+    "@types/node" "*"
+
 "@types/cookiejar@^2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@types/cookiejar/-/cookiejar-2.1.5.tgz#14a3e83fa641beb169a2dd8422d91c3c345a9a78"
@@ -907,7 +914,7 @@ cookie-signature@1.0.7:
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.7.tgz#ab5dd7ab757c54e60f37ef6550f481c426d10454"
   integrity sha512-NXdYc3dLr47pBkpUCHtKSwIOQXLVn8dZEuywboCOJY/osA0wFSLlSawr3KN8qXJEyX66FcONTH8EIlVuK0yyFA==
 
-cookie-signature@^1.2.1:
+cookie-signature@^1.2.1, cookie-signature@^1.2.2:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.2.2.tgz#57c7fc3cc293acab9fec54d73e15690ebe4a1793"
   integrity sha512-D76uU73ulSXrD1UXF4KE2TMxVVwhsnCgfAyTg9k8P6KGZjlXKrOLe4dJQKI3Bxi5wjesZoFXJWElNWBjPZMbhg==
@@ -916,6 +923,11 @@ cookie@0.7.2, cookie@^0.7.1:
   version "0.7.2"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.7.2.tgz#556369c472a2ba910f2979891b526b3436237ed7"
   integrity sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==
+
+cookie@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-1.0.2.tgz#27360701532116bd3f1f9416929d176afe1e4610"
+  integrity sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==
 
 create-require@^1.1.0:
   version "1.1.1"
