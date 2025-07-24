@@ -34,11 +34,23 @@ import SessionStorage from './helpers/sessions';
 import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
+import { route_rewriter } from './helpers/route_rewriter';
 
-export { Request, Response, Router } from 'express';
+export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
+
+/**
+ * Use the express.Router class to create modular, mountable route handlers. A Router instance is a complete
+ * middleware and routing system; for this reason, it is often referred to as a “mini-app.”
+ * @constructor
+ */
+export function Router (): express.Router {
+    const router = express.Router();
+
+    return route_rewriter<express.Router>(router);
+}
 
 /**
  * Merges configuration options with their default values
@@ -138,27 +150,7 @@ export function WebServer (
     }
 
     const app = express();
-    const instance = (app as any) as WebServer.Application;
-
-    // patch the v4 routes to v5 routes
-    for (const method of ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'connect', 'trace', 'all']) {
-        const original = (instance as any)[method].bind(instance);
-
-        (instance as any)[method] = ((route: any, ...handlers: any[]) => {
-            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/g.test(route)) {
-                const clean_route = route.replace(/:([a-zA-Z0-9_]+)\?(?!\()/g, '');
-                const full_route = route.replace(/\?/g, '');
-
-                Logger.warn(`⚠️ Patching optional route parameter: '${route}' → ['${clean_route}', '${full_route}']`);
-
-                // Register both routes
-                original(clean_route, ...handlers);
-                return original(full_route, ...handlers);
-            }
-
-            return original(route, ...handlers);
-        }) as typeof original;
-    }
+    const instance = route_rewriter<WebServer.Application>(app);
 
     // start tracking the response time as early as possible
     instance.use(Middleware.ResponseTime());
