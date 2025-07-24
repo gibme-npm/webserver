@@ -47,6 +47,10 @@ describe('Unit Tests', async () => {
         return response.json(request.session.body ?? {});
     });
 
+    app.get('/pathparam/:id?', (request, response) => {
+        return response.json({ id: request.params.id });
+    });
+
     app.ws('/wss', socket => {
         socket.on('message', msg => {
             socket.send(msg);
@@ -135,6 +139,30 @@ describe('Unit Tests', async () => {
             const json: { success: boolean } = await response.json();
 
             assert.ok(json.success);
+        });
+
+        describe('Optional Route Params', async () => {
+            it('No Param', async () => {
+                const response = await fetch.get(`${app.url}/pathparam`);
+
+                assert.ok(response.ok);
+
+                const json: { id?: string } = await response.json();
+
+                assert.ok(!json.id);
+            });
+
+            it('With Param', async () => {
+                const id = uuid();
+
+                const response = await fetch.get(`${app.url}/pathparam/${id}`);
+
+                assert.ok(response.ok);
+
+                const json: { id?: string } = await response.json();
+
+                assert.ok(json.id === id);
+            });
         });
 
         describe('Sessions Test', async () => {

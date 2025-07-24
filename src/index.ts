@@ -140,6 +140,26 @@ export function WebServer (
     const app = express();
     const instance = (app as any) as WebServer.Application;
 
+    // patch the v4 routes to v5 routes
+    for (const method of ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'connect', 'trace', 'all']) {
+        const original = (instance as any)[method].bind(instance);
+
+        (instance as any)[method] = ((route: any, ...handlers: any[]) => {
+            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/g.test(route)) {
+                const clean_route = route.replace(/:([a-zA-Z0-9_]+)\?(?!\()/g, '');
+                const full_route = route.replace(/\?/g, '');
+
+                Logger.warn(`⚠️ Patching optional route parameter: '${route}' → ['${clean_route}', '${full_route}']`);
+
+                // Register both routes
+                original(clean_route, ...handlers);
+                return original(full_route, ...handlers);
+            }
+
+            return original(route, ...handlers);
+        }) as typeof original;
+    }
+
     // start tracking the response time as early as possible
     instance.use(Middleware.ResponseTime());
 
