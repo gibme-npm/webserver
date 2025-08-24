@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "5.1.1",
+  "version": "20.0.0",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,7 +30,7 @@
   },
   "homepage": "https://gibme-npm.github.io/webserver/",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "engineStrict": true,
   "author": {
@@ -38,17 +38,17 @@
     "email": "brandonlehmann@gmail.com"
   },
   "dependencies": {
-    "@gibme/fetch": "^2.0.0",
-    "@gibme/logger": "^1.0.14",
-    "@gibme/perf-monitor": "^1.0.15",
-    "@gibme/timer": "^1.0.14",
-    "@gibme/xml": "^2.0.15",
-    "@types/compression": "^1.8.0",
+    "@gibme/fetch": "^20.0.0",
+    "@gibme/logger": "^20.0.0",
+    "@gibme/perf-monitor": "^20.0.0",
+    "@gibme/timer": "^20.0.0",
+    "@gibme/xml": "^20.0.0",
+    "@types/compression": "^1.8.1",
     "@types/cookie-signature": "^1.1.2",
-    "@types/express-session": "^1.18.1",
-    "@types/multer": "^1.4.12",
+    "@types/express-session": "^1.18.2",
+    "@types/multer": "^2.0.0",
     "@types/ws": "^8.18.1",
-    "cloudflared": "^0.7.0",
+    "cloudflared": "^0.7.1",
     "compression": "^1.8.1",
     "cookie": "^1.0.2",
     "cookie-signature": "^1.2.2",
@@ -58,11 +58,11 @@
     "multer": "^2.0.2",
     "node-cache": "^5.1.2",
     "uuid": "^11.1.0",
-    "ws": "^8.18.2"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^22.15.17",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
     "eslint": "^8.56.0",
@@ -71,9 +71,9 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
-    "mocha": "^10.2.0",
+    "mocha": "^11.7.1",
     "ts-node": "^10.9.2",
     "typedoc": "^0.28.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.2"
   }
 }
