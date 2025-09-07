@@ -101,25 +101,15 @@ export interface WebApplicationOptions {
     /**
      * Whether SSL should be enabled
      *
-     * Note: 'devcert' is only suitable for test systems as it will prompt to install
-     * a Root CA on the host for testing purposes only
-     *
      * @default false
      */
-    ssl: boolean | 'devcert';
+    ssl: boolean;
     /**
      * The SSL certificate file and/or data.
      *
      * Note: If a string is specified, a full path is expected
      */
     sslCertificate?: string | Buffer;
-    /**
-     * The SSL hostname(s) we should use when creating our devcert
-     *
-     * Note: 'localhost' is always included
-     * @default <empty>
-     */
-    sslHostnames?: string | string[];
     /**
      * The SSL private key file and/or data
      *

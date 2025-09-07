@@ -18,10 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { isIP } from 'net';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { certificateFor as devcert } from 'devcert';
 import { WebApplicationOptions } from './Types';
 import { config } from 'dotenv';
 import SessionStorage from './sessions';
@@ -96,64 +94,12 @@ export const mergeWebApplicationDefaults = (
         options.sessions.secret ??= processString('SESSION_SECURE', 'insecure_session_key');
     }
 
-    {
-        const hostnames: string[] = options.sslHostnames
-            ? Array.isArray(options.sslHostnames)
-                ? options.sslHostnames
-                : [options.sslHostnames]
-            : ['localhost'];
-
-        if (!hostnames.includes('localhost')) {
-            hostnames.push('localhost');
-        }
-
-        if (isIP(options.bindHost) === 0) {
-            hostnames.push(options.bindHost);
-        }
-
-        options.sslHostnames = hostnames;
-    }
-
     if (options.sslPrivateKey && typeof options.sslPrivateKey === 'string') {
         options.sslPrivateKey = readFileSync(resolve(options.sslPrivateKey));
     }
 
     if (options.sslCertificate && typeof options.sslCertificate === 'string') {
         options.sslCertificate = readFileSync(resolve(options.sslCertificate));
-    }
-
-    return options as WebApplicationOptions;
-};
-
-/**
- * Updates the SSL options at for a devcert
- *
- * @param options
- */
-export const updateSSLOptions = async (
-    options: Partial<WebApplicationOptions>
-): Promise<WebApplicationOptions> => {
-    if (options.ssl && options.sslHostnames && (!options.sslPrivateKey || !options.sslCertificate)) {
-        if (!Array.isArray(options.sslHostnames)) {
-            options.sslHostnames = [options.sslHostnames];
-        }
-
-        if (options.ssl === 'devcert') {
-            console.warn('Generating certificates for: %s',
-                options.sslHostnames.join(','));
-
-            const ssl = await devcert(
-                options.sslHostnames,
-                {
-                    skipHostsFile: true,
-                    skipCertutilInstall: true
-                });
-
-            options.sslPrivateKey = ssl.key;
-            options.sslCertificate = ssl.cert;
-        } else {
-            throw new Error('SSL mode requires private key and cert');
-        }
     }
 
     return options as WebApplicationOptions;

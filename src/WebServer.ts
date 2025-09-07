@@ -29,7 +29,7 @@ import Compression from 'compression';
 import multer from 'multer';
 import Logger from '@gibme/logger';
 import startCloudflaredTunnel, { installCloudflared } from './cloudflared';
-import { mergeWebApplicationDefaults, RecommendedHeaders, updateSSLOptions, ContentSecurityHeader } from './Helpers';
+import { mergeWebApplicationDefaults, RecommendedHeaders, ContentSecurityHeader } from './Helpers';
 import { resolve } from 'path';
 import { v4 as uuid } from 'uuid';
 import SessionStorage from './sessions';
@@ -71,7 +71,7 @@ export default abstract class WebServer {
     public static create (
         serverOptions: Partial<WebApplicationOptions> = {}
     ): WebApplication {
-        let options = mergeWebApplicationDefaults(serverOptions);
+        const options = mergeWebApplicationDefaults(serverOptions);
 
         if (!options.allowProcessErrors) {
             // *waves hand in jedi manner* there will be no crashes here
@@ -271,7 +271,7 @@ export default abstract class WebServer {
         };
 
         app.start = async (): Promise<void> => {
-            (app as any).appOptions = options = await updateSSLOptions(options);
+            (app as any).appOptions = options;
 
             if (options.autoHandleOptions) {
                 app.options('*', (_request, response) => {
