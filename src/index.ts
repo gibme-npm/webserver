@@ -88,6 +88,12 @@ const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.
         options.cookieSecret = [options.cookieSecret];
     }
 
+    options.cookieSecret = options.cookieSecret.filter(secret => !!secret);
+
+    if (options.cookieSecret.length === 0) {
+        options.cookieSecret.push('insecure');
+    }
+
     if (typeof options.sessions === 'boolean' && options.sessions) {
         options.sessions = {} as any;
     }
