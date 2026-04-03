@@ -40,7 +40,7 @@ export const route_rewriter = <OutType>(instance: any): OutType => {
         const original = (instance as any)[method].bind(instance);
 
         (instance as any)[method] = ((route: any, ...handlers: any[]) => {
-            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/g.test(route)) {
+            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/.test(route)) {
                 const clean_route = cleanRoute(route);
                 const full_route = route.replace(/\?/g, '');
 
@@ -63,7 +63,7 @@ export const route_rewriter = <OutType>(instance: any): OutType => {
         const original = (instance as any).route.bind(instance);
 
         (instance as any).route = ((route: any) => {
-            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/g.test(route)) {
+            if (typeof route === 'string' && /:([a-zA-Z0-9_]+)\?(?!\()/.test(route)) {
                 const clean_route = cleanRoute(route);
                 const full_route = route.replace(/\?/g, '');
 

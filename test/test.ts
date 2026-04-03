@@ -20,7 +20,7 @@
 
 import WebServer, { Logger } from '../src';
 import fetch, { CookieJar } from '@gibme/fetch';
-import { after, before, describe, it } from 'mocha';
+import { after, before, describe, it } from 'node:test';
 import WebSocket from 'ws';
 import assert from 'assert';
 import { v7 as uuid } from 'uuid';
@@ -63,6 +63,13 @@ describe('Unit Tests', async () => {
         socket.send(id);
     });
 
+    app.get('/basic-auth', (request, response) => {
+        return response.json({
+            username: request.authorization?.basic?.username,
+            password: request.authorization?.basic?.password
+        });
+    });
+
     app.protected.setAuthenticationProvider(async request =>
         request.authorization?.bearer?.token === token);
 
@@ -84,24 +91,24 @@ describe('Unit Tests', async () => {
     });
 
     describe('Cloudflared', async () => {
-        it('Start Tunnel', async function () {
+        it('Start Tunnel', { skip: false }, async (t) => {
             try {
                 const binary = await app.tunnel.install();
 
                 if (!binary) {
-                    return this.skip();
+                    return t.skip('Cloudflared binary not available');
                 }
 
                 Logger.warn('Cloudflared: %s', binary);
             } catch {
-                return this.skip();
+                return t.skip('Cloudflared installation failed');
             }
 
             try {
                 const tunnel = await app.tunnel.start();
 
                 if (!tunnel) {
-                    return this.skip();
+                    return t.skip('Tunnel failed to start');
                 }
 
                 Logger.info('Tunnel URL: %s', app.tunnel.url);
@@ -109,19 +116,19 @@ describe('Unit Tests', async () => {
             } catch {
                 await app.tunnel.stop();
 
-                return this.skip();
+                return t.skip('Tunnel start threw an error');
             }
         });
 
-        it('Using Tunnel?', async function () {
+        it('Using Tunnel?', { skip: false }, async (t) => {
             if (!app.tunnel.url) {
-                this.skip();
+                t.skip('No tunnel URL available');
             }
         });
 
-        it('Connections?', async function () {
+        it('Connections?', { skip: false }, async (t) => {
             if (!app.tunnel.url) {
-                return this.skip();
+                return t.skip('No tunnel URL available');
             }
 
             assert.notEqual(app.tunnel.connections.length, 0);
@@ -189,6 +196,27 @@ describe('Unit Tests', async () => {
 
                 assert.deepEqual(json, data);
             });
+        });
+    });
+
+    describe('Basic Auth', async () => {
+        it('Password With Colons', async () => {
+            const username = 'user';
+            const password = 'pass:word:with:colons';
+            const encoded = Buffer.from(`${username}:${password}`).toString('base64');
+
+            const response = await fetch.get(`${app.url}/basic-auth`, {
+                headers: {
+                    authorization: `Basic ${encoded}`
+                }
+            });
+
+            assert.ok(response.ok);
+
+            const json: { username?: string; password?: string } = await response.json();
+
+            assert.strictEqual(json.username, username);
+            assert.strictEqual(json.password, password);
         });
     });
 

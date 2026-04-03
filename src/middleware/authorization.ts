@@ -87,9 +87,12 @@ export default function middleware () {
                 const [type, token] = authorization.split(' ', 2);
 
                 if (type.toLowerCase() === 'basic') {
-                    const [username, password] = Buffer.from(token, 'base64').toString().split(':');
+                    const decoded = Buffer.from(token, 'base64').toString();
+                    const idx = decoded.indexOf(':');
 
-                    if (username && password) {
+                    if (idx !== -1) {
+                        const username = decoded.substring(0, idx);
+                        const password = decoded.substring(idx + 1);
                         request.authorization = {
                             type: 'Basic',
                             basic: {

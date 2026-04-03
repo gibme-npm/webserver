@@ -36,6 +36,8 @@ import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
 import { route_rewriter } from './helpers/route_rewriter';
 
+let processHandlersRegistered = false;
+
 export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
@@ -143,7 +145,8 @@ export function WebServer (
 ): WebServer.Application {
     const options = merge_options_defaults(serverOptions);
 
-    if (options.suppressProcessErrors) {
+    if (options.suppressProcessErrors && !processHandlersRegistered) {
+        processHandlersRegistered = true;
         // *waves hand in jedi manner* there will be no crashes here
         process.on('uncaughtException', (error, origin) => {
             Logger.error('Caught Exception: %s', error.toString());
