@@ -36,26 +36,15 @@ import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
 import { route_rewriter } from './helpers/route_rewriter';
 
+export { Router } from './helpers/router';
 export { ProtectedRouter } from './helpers/protected_router';
-
-let processHandlersRegistered = false;
-
 export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
 export type { AuthenticationProvider } from './middleware';
 
-/**
- * Use the express.Router class to create modular, mountable route handlers. A Router instance is a complete
- * middleware and routing system; for this reason, it is often referred to as a “mini-app.”
- * @constructor
- */
-export function Router (): express.Router {
-    const router = express.Router();
-
-    return route_rewriter<express.Router>(router);
-}
+let processHandlersRegistered = false;
 
 /**
  * Merges configuration options with their default values
