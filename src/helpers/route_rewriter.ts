@@ -25,7 +25,8 @@ export const route_rewriter = <OutType>(instance: any): OutType => {
     if ((instance as any).__route_rewriter_patched) return instance as any;
     (instance as any).__route_rewriter_patched = true;
 
-    const isStrict = typeof instance.get === 'function' && instance.get('strict routing') === true;
+    const isApp = typeof instance.set === 'function';
+    const isStrict = isApp && instance.get('strict routing') === true;
 
     const cleanRoute = (route: string): string => {
         const raw_clean = route.replace(/:([a-zA-Z0-9_]+)\?(?!\()/g, '');
@@ -44,7 +45,7 @@ export const route_rewriter = <OutType>(instance: any): OutType => {
                 const clean_route = cleanRoute(route);
                 const full_route = route.replace(/\?/g, '');
 
-                Logger.warn('⚠️ Patching optional route parameter: \'%s - [\':%s\', \'%s\'] (strict=%s)\'',
+                Logger.warn('⚠️ Patching optional route parameter: \'%s - [\'%s\', \'%s\'] (strict=%s)\'',
                     route,
                     clean_route,
                     full_route,

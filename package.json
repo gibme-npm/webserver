@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "22.0.0",
+  "version": "22.0.1",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,7 +42,7 @@
     "@gibme/logger": "^22.0.1",
     "@gibme/perf-monitor": "^22.0.0",
     "@gibme/timer": "^22.0.0",
-    "@gibme/xml": "^22.0.0",
+    "@gibme/xml": "^22.0.1",
     "@types/compression": "^1.8.1",
     "@types/cookie-signature": "^1.1.2",
     "@types/express-session": "^1.18.2",
@@ -57,7 +57,7 @@
     "helmet": "^8.1.0",
     "multer": "^2.1.1",
     "node-cache": "^5.1.2",
-    "uuid": "^13.0.0",
+    "uuid": "^14.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {

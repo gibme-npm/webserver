@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import type express from 'express';
-import { v7 as uuid } from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 declare global {
     namespace Express {
