@@ -103,21 +103,29 @@ request.authorization?.jwt?.signature
 
 ## Protected Routes
 
-Restrict access to routes with a pluggable authentication provider:
+Use `ProtectedRouter()` to build a mountable Express Router whose every route is gated by a pluggable authentication provider. The provider is consulted on each request, so calling `setAuthenticationProvider` after registering routes updates auth for all of them:
 
 ```typescript
-app.protected.setAuthenticationProvider(async (request) => {
+import WebServer, { ProtectedRouter } from '@gibme/webserver';
+
+const app = WebServer();
+const adminRouter = ProtectedRouter();
+
+adminRouter.setAuthenticationProvider(async (request) => {
     return request.authorization?.bearer?.token === 'secret';
     // return true to allow, false to deny (401)
     // or return { statusCode: 403, message: 'Forbidden' }
 });
 
-app.protected.get('/admin', (_request, response) => {
+adminRouter.get('/admin', (_request, response) => {
     return response.json({ admin: true });
 });
+
+app.use(adminRouter);            // mount at root
+// or: app.use('/api', adminRouter);  // mount at a prefix
 ```
 
-All HTTP methods are available on `app.protected` (get, post, put, patch, delete, head, options, etc.).
+Because `ProtectedRouter()` returns a real `express.Router`, all router methods are available (`get`, `post`, `put`, `patch`, `delete`, `head`, `options`, `route`, `use`, etc.) and instances can be nested or reused across apps.
 
 ## WebSocket Routes
 

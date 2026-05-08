@@ -24,8 +24,10 @@ type AuthenticationResult = boolean | { statusCode: number; message?: any; };
 
 export type AuthenticationProvider = (request: express.Request) => Promise<AuthenticationResult> | AuthenticationResult;
 
-export default function middleware (provider?: AuthenticationProvider) {
+export default function middleware (getProvider: () => AuthenticationProvider | undefined) {
     return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        const provider = getProvider();
+
         if (!provider) {
             return next();
         }

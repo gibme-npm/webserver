@@ -29,12 +29,14 @@ import type { PathParams } from 'express-serve-static-core';
 import Logger from '@gibme/logger';
 import Helmet, { HelmetOptions } from 'helmet';
 import Compression from 'compression';
-import Middleware, { AuthenticationProvider, LogEntry, XMLParserOptions, XMLValidatorOptions } from './middleware';
+import Middleware, { LogEntry, XMLParserOptions, XMLValidatorOptions } from './middleware';
 import SessionStorage from './helpers/sessions';
 import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
 import { route_rewriter } from './helpers/route_rewriter';
+
+export { ProtectedRouter } from './helpers/protected_router';
 
 let processHandlersRegistered = false;
 
@@ -42,6 +44,7 @@ export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
+export type { AuthenticationProvider } from './middleware';
 
 /**
  * Use the express.Router class to create modular, mountable route handlers. A Router instance is a complete
@@ -251,67 +254,6 @@ export function WebServer (
     }
     if (options.autoContentSecurityPolicyHeaders) {
         instance.use(Middleware.ContentSecurityPolicy());
-    }
-
-    // Set up the protected router interface
-    {
-        let provider: AuthenticationProvider | undefined;
-
-        assign('protected', {
-            setAuthenticationProvider: (new_provider?: AuthenticationProvider) => {
-                provider = new_provider;
-            },
-            get: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.get(route, ...middlewares);
-            },
-            post: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.post(route, ...middlewares);
-            },
-            put: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.put(route, ...middlewares);
-            },
-            patch: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.patch(route, ...middlewares);
-            },
-            delete: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.delete(route, ...middlewares);
-            },
-            head: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.head(route, ...middlewares);
-            },
-            options: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.options(route, ...middlewares);
-            },
-            connect: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.connect(route, ...middlewares);
-            },
-            trace: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.trace(route, ...middlewares);
-            },
-            all: (route: string, ...middlewares: express.RequestHandler[]) => {
-                middlewares.unshift(Middleware.ProtectedRouter(provider));
-
-                return instance.all(route, ...middlewares);
-            }
-        } as WebServer.ProtectedRouter);
     }
 
     // Set up the Tunnel interface
@@ -611,25 +553,6 @@ export namespace WebServer {
         readonly url?: string;
     }
 
-    export type ProtectedRouter = {
-        /**
-         * Sets the authentication provider to use for protected routes.
-         *
-         * @param provider
-         */
-        setAuthenticationProvider: (provider?: AuthenticationProvider) => void;
-        get: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        post: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        put: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        patch: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        delete: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        head: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        options: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        connect: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        trace: (route: string, ...middlewares: express.RequestHandler[]) => void;
-        all: (route: string, ...middlewares: express.RequestHandler[]) => void;
-    }
-
     export type Application = express.Application & {
         /**
          * The hostname the server is bound to
@@ -643,11 +566,6 @@ export namespace WebServer {
          * The port the server is bound to
          */
         readonly port: number;
-        /**
-         * Access to easy-to-use protected routes that automatically insert middleware
-         * that checks with the authentication provider for permitted access.
-         */
-        readonly protected: ProtectedRouter;
         /**
          * The underlying HTTP/s server instance
          */

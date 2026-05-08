@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import WebServer, { Logger } from '../src';
+import WebServer, { Logger, ProtectedRouter } from '../src';
 import fetch, { CookieJar } from '@gibme/fetch';
 import { after, before, describe, it } from 'node:test';
 import WebSocket from 'ws';
@@ -70,12 +70,16 @@ describe('Unit Tests', async () => {
         });
     });
 
-    app.protected.setAuthenticationProvider(async request =>
+    const protectedRouter = ProtectedRouter();
+
+    protectedRouter.setAuthenticationProvider(async request =>
         request.authorization?.bearer?.token === token);
 
-    app.protected.get('/protected', (_, response) => {
+    protectedRouter.get('/protected', (_, response) => {
         return response.status(200).send();
     });
+
+    app.use(protectedRouter);
 
     before(async () => {
         await app.start();
