@@ -21,12 +21,14 @@
 import express from 'express';
 import { route_rewriter } from './route_rewriter';
 
+export type Router = express.Router;
+
 /**
  * Creates a mountable Express Router (a complete middleware and routing system, often called a
  * "mini-app"). Includes the optional route-parameter rewriting applied via `route_rewriter`, so
  * `:id?`-style routes are registered as both `/:id` and `/` variants.
  */
-export function Router (): express.Router {
+export function Router (): Router {
     const router = express.Router();
 
     return route_rewriter<express.Router>(router);
