@@ -42,6 +42,7 @@ export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
+export { createProxyMiddleware, Options as ProxyOptions } from 'http-proxy-middleware';
 export type { AuthenticationProvider } from './middleware';
 
 let processHandlersRegistered = false;
