@@ -35,6 +35,19 @@ import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
 import { route_rewriter } from './helpers/route_rewriter';
+import {
+    createProxyMiddleware,
+    Options as ProxyOptions,
+    fixRequestBody as ProxyFixRequestBody,
+    responseInterceptor as ProxyResponseInterceptor,
+    RequestHandler as ProxyRequestHandler,
+    loggerPlugin as ProxyLoggerPlugin,
+    proxyEventsPlugin as ProxyEventsPlugin,
+    Filter as ProxyFilter,
+    Plugin as ProxyPlugin,
+    errorResponsePlugin as ProxyErrorResponsePlugin,
+    debugProxyErrorsPlugin as ProxyDebugProxyErrorsPlugin
+} from 'http-proxy-middleware';
 
 export { Router } from './helpers/router';
 export { ProtectedRouter } from './helpers/protected_router';
@@ -42,7 +55,19 @@ export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
-export { createProxyMiddleware, Options as ProxyOptions } from 'http-proxy-middleware';
+export namespace Proxy {
+    export const createMiddleware = createProxyMiddleware;
+    export type Options = ProxyOptions;
+    export const fixRequestBody = ProxyFixRequestBody;
+    export const responseInterceptor = ProxyResponseInterceptor;
+    export type RequestHandler = ProxyRequestHandler;
+    export const loggerPlugin = ProxyLoggerPlugin;
+    export const eventsPlugin = ProxyEventsPlugin;
+    export type Filter = ProxyFilter
+    export type Plugin = ProxyPlugin
+    export const ErrorResponsePlugin = ProxyErrorResponsePlugin;
+    export const DebugProxyErrorsPlugin = ProxyDebugProxyErrorsPlugin;
+}
 export type { AuthenticationProvider } from './middleware';
 
 let processHandlersRegistered = false;
