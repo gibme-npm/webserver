@@ -48,6 +48,18 @@ import {
     errorResponsePlugin as ProxyErrorResponsePlugin,
     debugProxyErrorsPlugin as ProxyDebugProxyErrorsPlugin
 } from 'http-proxy-middleware';
+import {
+    create_mcp_server,
+    McpServer,
+    McpServerOptions,
+    McpServerImplementation,
+    McpTool,
+    McpToolCallback,
+    McpToolResult
+} from './helpers/mcp_server';
+import { McpRouter } from './helpers/mcp_router';
+import type { ToolAnnotations as McpToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
+import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 
 export { Router } from './helpers/router';
 export { ProtectedRouter } from './helpers/protected_router';
@@ -55,6 +67,7 @@ export { Request, Response } from 'express';
 export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
+export { z as zod } from 'zod';
 export namespace Proxy {
     export const createMiddleware = createProxyMiddleware;
     export type Options = ProxyOptions;
@@ -67,6 +80,25 @@ export namespace Proxy {
     export type Plugin = ProxyPlugin
     export const ErrorResponsePlugin = ProxyErrorResponsePlugin;
     export const DebugProxyErrorsPlugin = ProxyDebugProxyErrorsPlugin;
+}
+export namespace MCP {
+    export const create_server = create_mcp_server;
+    export const Server = McpServer;
+    export const Router = McpRouter;
+    export type Router = McpRouter;
+    export type ServerOptions = McpServerOptions;
+    export type ServerImplementation = McpServerImplementation;
+    export type Tool<
+        ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
+        ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
+    > = McpTool<ToolInputType, ToolOutputType>;
+    export type ToolCallback<
+        ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
+        ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
+    > = McpToolCallback<ToolInputType, ToolOutputType>;
+    export type ToolResult<ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat> =
+        McpToolResult<ToolOutputType>;
+    export type ToolAnnotations = McpToolAnnotations;
 }
 export type { AuthenticationProvider } from './middleware';
 
@@ -120,15 +152,18 @@ const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.
 
     if (typeof options.sessions === 'object') {
         options.sessions.cookie ??= {};
-        options.sessions.cookie.maxAge ??= 86_400_000;
-        options.sessions.cookie.secure ??= typeof options.ssl === 'object';
+        if (typeof options.sessions.cookie === 'object') {
+            options.sessions.cookie.maxAge ??= 86_400_000;
+            options.sessions.cookie.secure ??= typeof options.ssl === 'object';
+        }
         options.sessions.name ??= 'sid';
         options.sessions.saveUninitialized ??= true;
         options.sessions.resave ??= false;
         options.sessions.secret ??= 'insecure_session_key';
-        options.sessions.store ??= new SessionStorage({
-            stdTTL: options.sessions.cookie.maxAge / 1000
-        });
+        const stdTTL = (typeof options.sessions.cookie === 'object' && options.sessions.cookie.maxAge
+            ? options.sessions.cookie.maxAge
+            : 86_400_000) / 1000;
+        options.sessions.store ??= new SessionStorage({ stdTTL });
 
         if (Array.isArray(options.sessions.secret)) {
             options.cookieSecret.push(...options.sessions.secret.map(secret => secret.toString()));
