@@ -204,7 +204,7 @@ Tool, resource, and prompt schemas use raw Zod shapes. The `inputSchema`/`output
 ```typescript
 app.use('/mcp', MCP.Router(() => {
     const sessionState = openSessionState();
-    return MCP.create_server({
+    return MCP.createServer({
         implementation: { name: 'my-server', version: '1.0.0' },
         tools: [{ /* tools that close over sessionState */ }]
     });

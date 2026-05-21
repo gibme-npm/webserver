@@ -20,7 +20,6 @@
 
 import { createServer as createHTTPServer } from 'http';
 import { createServer as createHTTPSServer, Server } from 'https';
-import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import express from 'express';
 import WebSocket from './helpers/websocket';
@@ -38,204 +37,15 @@ import Middleware, {
     ErrorSink,
     AuthenticationProvider
 } from './middleware';
-import SessionStorage from './helpers/sessions';
 import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
 import type { CipherKey } from 'crypto';
 import { route_rewriter } from './helpers/route_rewriter';
-import {
-    createProxyMiddleware,
-    Options as ProxyOptions,
-    fixRequestBody as ProxyFixRequestBody,
-    responseInterceptor as ProxyResponseInterceptor,
-    RequestHandler as ProxyRequestHandler,
-    loggerPlugin as ProxyLoggerPlugin,
-    proxyEventsPlugin as ProxyEventsPlugin,
-    Filter as ProxyFilter,
-    Plugin as ProxyPlugin,
-    errorResponsePlugin as ProxyErrorResponsePlugin,
-    debugProxyErrorsPlugin as ProxyDebugProxyErrorsPlugin
-} from 'http-proxy-middleware';
-import {
-    create_mcp_server,
-    McpServer,
-    McpServerOptions,
-    McpServerImplementation,
-    McpServerConfig,
-    McpTool,
-    McpToolCallback,
-    McpToolResult,
-    McpResource,
-    McpResourceTemplate,
-    McpResourceMetadata,
-    McpReadResourceCallback,
-    McpReadResourceTemplateCallback,
-    McpPrompt,
-    McpPromptCallback
-} from './helpers/mcp_server';
-import { McpRouter, McpSessionOptions } from './helpers/mcp_router';
-import type { ToolAnnotations as McpToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
+import { merge_options_defaults } from './helpers/options';
 
-export { Router } from './helpers/router';
-export { ProtectedRouter } from './helpers/protected_router';
-export { Request, Response } from 'express';
-export { Logger } from '@gibme/logger';
-export { Store } from 'express-session';
-export { default as multer } from 'multer';
-export { z as zod } from 'zod';
-export { default as RateLimit, createInMemoryRateLimitStore } from './middleware/rate_limit';
-export { default as CSRF } from './middleware/csrf';
-export namespace Proxy {
-    export const createMiddleware = createProxyMiddleware;
-    export type Options = ProxyOptions;
-    export const fixRequestBody = ProxyFixRequestBody;
-    export const responseInterceptor = ProxyResponseInterceptor;
-    export type RequestHandler = ProxyRequestHandler;
-    export const loggerPlugin = ProxyLoggerPlugin;
-    export const eventsPlugin = ProxyEventsPlugin;
-    export type Filter = ProxyFilter
-    export type Plugin = ProxyPlugin
-    export const ErrorResponsePlugin = ProxyErrorResponsePlugin;
-    export const DebugProxyErrorsPlugin = ProxyDebugProxyErrorsPlugin;
-}
-export namespace MCP {
-    export const create_server = create_mcp_server;
-    export const Server = McpServer;
-    export const Router = McpRouter;
-    export type Router = McpRouter;
-    export const ResourceTemplate = McpResourceTemplate;
-    export type ResourceTemplate = McpResourceTemplate;
-    export type ServerOptions = McpServerOptions;
-    export type ServerImplementation = McpServerImplementation;
-    export type ServerConfig = McpServerConfig;
-    export type Tool<
-        ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
-        ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
-    > = McpTool<ToolInputType, ToolOutputType>;
-    export type ToolCallback<
-        ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
-        ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
-    > = McpToolCallback<ToolInputType, ToolOutputType>;
-    export type ToolResult<ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat> =
-        McpToolResult<ToolOutputType>;
-    export type ToolAnnotations = McpToolAnnotations;
-    export type Resource = McpResource;
-    export type ResourceMetadata = McpResourceMetadata;
-    export type ResourceCallback = McpReadResourceCallback;
-    export type TemplatedResourceCallback = McpReadResourceTemplateCallback;
-    export type Prompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
-        McpPrompt<PromptArgsType>;
-    export type PromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
-        McpPromptCallback<PromptArgsType>;
-    export type PromptArgsShape = ZodRawShapeCompat;
-    export type SessionOptions = McpSessionOptions;
-}
-export type {
-    AuthenticationProvider,
-    AuthenticationResult,
-    CorsOptions,
-    CorsOrigin,
-    CSPDirectives,
-    ErrorSink,
-    ErrorSinkContext,
-    LogEntry,
-    XMLParserOptions,
-    XMLValidatorOptions,
-    RateLimitOptions,
-    RateLimitStore,
-    RateLimitBucket,
-    RateLimitInfo,
-    CSRFOptions,
-    CSRFSecret
-} from './middleware';
+export * from './exports';
 
 let processHandlersRegistered = false;
-
-/**
- * Merges configuration options with their default values
- * @param options
- * @ignore
- */
-const merge_options_defaults = (options: Partial<WebServer.Options>): WebServer.Options => {
-    options.suppressProcessErrors ??= true;
-    options.helmet ??= false;
-    options.host ??= '0.0.0.0';
-    options.backlog ??= 511;
-    options.autoRecommendedHeaders ??= false;
-    options.autoContentSecurityPolicyHeaders ??= false;
-    options.autoHandle404 ??= true;
-    options.autoHandleOptions ??= true;
-    options.compression ??= true;
-    options.corsOrigin ??= '*';
-    options.ssl ??= false;
-    options.port ??= options.ssl ? 443 : 80;
-    options.logging ??= false;
-    options.autoStartCloudflared ??= false;
-    options.bodyLimit ??= 2;
-    options.sessions ??= false;
-    options.xml ??= {};
-    options.xml.parserOptions ??= {};
-    options.xml.validatorOptions ??= {};
-    options.autoParseJSON ??= true;
-    options.autoParseRaw ??= true;
-    options.autoParseText ??= true;
-    options.autoParseURLEncoded ??= true;
-    options.autoParseXML ??= true;
-    options.cookieSecret ??= [];
-
-    if (!Array.isArray(options.cookieSecret)) {
-        options.cookieSecret = [options.cookieSecret];
-    }
-
-    options.cookieSecret = options.cookieSecret.filter(secret => !!secret);
-
-    if (options.cookieSecret.length === 0) {
-        options.cookieSecret.push('insecure');
-    }
-
-    if (typeof options.sessions === 'boolean' && options.sessions) {
-        options.sessions = {} as any;
-    }
-
-    if (typeof options.sessions === 'object') {
-        options.sessions.cookie ??= {};
-        if (typeof options.sessions.cookie === 'object') {
-            options.sessions.cookie.maxAge ??= 86_400_000;
-            options.sessions.cookie.secure ??= typeof options.ssl === 'object';
-        }
-        options.sessions.name ??= 'sid';
-        options.sessions.saveUninitialized ??= true;
-        options.sessions.resave ??= false;
-        options.sessions.secret ??= 'insecure_session_key';
-        const stdTTL = (typeof options.sessions.cookie === 'object' && options.sessions.cookie.maxAge
-            ? options.sessions.cookie.maxAge
-            : 86_400_000) / 1000;
-        options.sessions.store ??= new SessionStorage({ stdTTL });
-
-        if (Array.isArray(options.sessions.secret)) {
-            options.cookieSecret.push(...options.sessions.secret.map(secret => secret.toString()));
-        } else {
-            options.cookieSecret.push(options.sessions.secret.toString());
-        }
-    }
-
-    if (typeof options.ssl === 'object') {
-        if (typeof options.ssl.certificate === 'string') {
-            options.ssl.certificate = readFileSync(resolve(options.ssl.certificate));
-        }
-
-        if (typeof options.ssl.privateKey === 'string') {
-            options.ssl.privateKey = readFileSync(resolve(options.ssl.privateKey));
-        }
-
-        if (!options.ssl.certificate || !options.ssl.privateKey) {
-            throw new Error('SSL certificate and private key must be specified');
-        }
-    }
-
-    return options as WebServer.Options;
-};
 
 /**
  * Creates a new Express WebServer instance
