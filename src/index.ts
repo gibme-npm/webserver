@@ -29,7 +29,15 @@ import type { PathParams } from 'express-serve-static-core';
 import Logger from '@gibme/logger';
 import Helmet, { HelmetOptions } from 'helmet';
 import Compression from 'compression';
-import Middleware, { LogEntry, XMLParserOptions, XMLValidatorOptions } from './middleware';
+import Middleware, {
+    LogEntry,
+    XMLParserOptions,
+    XMLValidatorOptions,
+    CorsOptions,
+    CSPDirectives,
+    ErrorSink,
+    AuthenticationProvider
+} from './middleware';
 import SessionStorage from './helpers/sessions';
 import Cloudflared, { Connection } from './helpers/cloudflared';
 import type { ServeStaticOptions } from 'serve-static';
@@ -65,7 +73,7 @@ import {
     McpPrompt,
     McpPromptCallback
 } from './helpers/mcp_server';
-import { McpRouter } from './helpers/mcp_router';
+import { McpRouter, McpSessionOptions } from './helpers/mcp_router';
 import type { ToolAnnotations as McpToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 
@@ -76,6 +84,8 @@ export { Logger } from '@gibme/logger';
 export { Store } from 'express-session';
 export { default as multer } from 'multer';
 export { z as zod } from 'zod';
+export { default as RateLimit, createInMemoryRateLimitStore } from './middleware/rate_limit';
+export { default as CSRF } from './middleware/csrf';
 export namespace Proxy {
     export const createMiddleware = createProxyMiddleware;
     export type Options = ProxyOptions;
@@ -119,8 +129,26 @@ export namespace MCP {
     export type PromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
         McpPromptCallback<PromptArgsType>;
     export type PromptArgsShape = ZodRawShapeCompat;
+    export type SessionOptions = McpSessionOptions;
 }
-export type { AuthenticationProvider } from './middleware';
+export type {
+    AuthenticationProvider,
+    AuthenticationResult,
+    CorsOptions,
+    CorsOrigin,
+    CSPDirectives,
+    ErrorSink,
+    ErrorSinkContext,
+    LogEntry,
+    XMLParserOptions,
+    XMLValidatorOptions,
+    RateLimitOptions,
+    RateLimitStore,
+    RateLimitBucket,
+    RateLimitInfo,
+    CSRFOptions,
+    CSRFSecret
+} from './middleware';
 
 let processHandlersRegistered = false;
 
@@ -265,7 +293,11 @@ export function WebServer (
     // Set up the WebSocket methods
     {
         const ws = WebSocket(app, instance.server, {
-            wsOptions: options.wsOptions
+            wsOptions: options.wsOptions,
+            wsAuth: options.wsAuth,
+            wsAuthTimeoutMs: options.wsAuthTimeoutMs,
+            cookieSecret: options.cookieSecret,
+            errorSink: options.errorSink
         });
 
         assign('wsServer', ws.getWss());
@@ -281,13 +313,13 @@ export function WebServer (
     // Add our middlewares
     instance.use(Middleware.RequestId());
     instance.use(Middleware.RemoteIp());
-    instance.use(Middleware.Authorization());
+    instance.use(Middleware.Authorization(options.errorSink));
     instance.use(Middleware.Cors(options.corsOrigin));
-    instance.use(Middleware.Cookies(options.cookieSecret));
+    instance.use(Middleware.Cookies(options.cookieSecret, options.errorSink));
     if (typeof options.sessions === 'object') {
         instance.use(expressSession(options.sessions));
     }
-    instance.use(Middleware.Logging(options.logging));
+    instance.use(Middleware.Logging(options.logging, options.errorSink));
     if (options.autoParseJSON) {
         instance.use(express.json(standardParserOptions));
     }
@@ -323,7 +355,10 @@ export function WebServer (
         instance.use(Middleware.RecommendedHeaders());
     }
     if (options.autoContentSecurityPolicyHeaders) {
-        instance.use(Middleware.ContentSecurityPolicy());
+        const directives = typeof options.autoContentSecurityPolicyHeaders === 'object'
+            ? options.autoContentSecurityPolicyHeaders
+            : undefined;
+        instance.use(Middleware.ContentSecurityPolicy(directives));
     }
 
     // Set up the Tunnel interface
@@ -449,10 +484,12 @@ export function WebServer (
 export namespace WebServer {
     export type Options = {
         /**
-         * Whether we enable the content security policy header by default
+         * Whether we enable the content security policy header by default. Set to
+         * an object of directives (e.g. `{ 'default-src': "'self'", 'img-src': ['*'] }`)
+         * to override the default `default-src 'self'` policy.
          * @default false
          */
-        autoContentSecurityPolicyHeaders: boolean;
+        autoContentSecurityPolicyHeaders: boolean | CSPDirectives;
         /**
          * Whether we should auto handle 404s
          * @default true
@@ -520,10 +557,14 @@ export namespace WebServer {
          */
         cookieSecret: CipherKey | CipherKey[];
         /**
-         * The CORS domain name to report in requests
-         * @default * (all)
+         * The CORS origin to allow. Accepts either a single string (legacy form) or
+         * a full options bag (`origin`/`methods`/`allowedHeaders`/`exposedHeaders`/
+         * `credentials`/`maxAge`/`preflightContinue`/`optionsSuccessStatus`). When
+         * `credentials: true`, the wildcard origin `*` is reflected to the request's
+         * `Origin` header instead of being emitted literally.
+         * @default '*'
          */
-        corsOrigin: string;
+        corsOrigin: string | CorsOptions;
         /**
          * Helmet module options
          * @default false
@@ -577,6 +618,15 @@ export namespace WebServer {
             privateKey: string | Buffer;
         }
         /**
+         * Optional sink invoked when the library would otherwise silently swallow
+         * an internal error (e.g. an unparseable Authorization header, a malformed
+         * JSON cookie, or a throwing logging callback). The sink receives the error
+         * and a stable string context. Thrown sink errors are caught and discarded.
+         *
+         * @default undefined (silent)
+         */
+        errorSink?: ErrorSink;
+        /**
          * If set to true, allows node to crash via thrown exceptions
          * If set to false (or unset), thrown exceptions are swallowed and logged automatically
          * @default true
@@ -586,6 +636,23 @@ export namespace WebServer {
          * WebSocket server options
          */
         wsOptions: WebSocket.ServerOptions;
+        /**
+         * Authentication provider applied to every WebSocket route that does not
+         * specify its own. Per-route auth (via `app.ws(route, auth, handler)` or
+         * `ProtectedRouter().ws(...)`) overrides this fallback.
+         *
+         * @default undefined (no app-level WebSocket gate)
+         */
+        wsAuth?: AuthenticationProvider;
+        /**
+         * Maximum time in milliseconds an `AuthenticationProvider` is allowed to
+         * take during a WebSocket handshake before the upgrade is denied with
+         * HTTP 504. Set to 0 to disable. Prevents a hung provider from holding
+         * sockets open indefinitely.
+         *
+         * @default 30000
+         */
+        wsAuthTimeoutMs?: number;
         /**
          * Automatic XML body parser handling options
          */

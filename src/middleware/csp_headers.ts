@@ -20,18 +20,30 @@
 
 import type express from 'express';
 
+export type CSPDirectives = Record<string, string | string[] | undefined>;
+
 /**
- * The default content security header policy
- * @ignore
+ * The default content security policy directives applied when no override is provided.
  */
-const ContentSecurityPolicy: Record<string, string> = {
-    'Content-Security-Policy': 'default-src \'self\''
+const DEFAULT_DIRECTIVES: CSPDirectives = {
+    'default-src': '\'self\''
 };
 
-export default function middleware () {
+const build_header = (directives: CSPDirectives): string =>
+    Object.entries(directives)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => {
+            const joined = Array.isArray(value) ? value.join(' ') : value;
+
+            return joined ? `${key} ${joined}` : key;
+        })
+        .join('; ');
+
+export default function middleware (directives?: CSPDirectives) {
+    const header_value = build_header(directives ?? DEFAULT_DIRECTIVES);
+
     return (_request: express.Request, response: express.Response, next: express.NextFunction) => {
-        Object.entries(ContentSecurityPolicy)
-            .forEach(([key, value]) => response.header(key, value));
+        response.header('Content-Security-Policy', header_value);
 
         return next();
     };

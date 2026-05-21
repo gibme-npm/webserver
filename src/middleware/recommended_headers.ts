@@ -21,27 +21,16 @@
 import type express from 'express';
 
 /**
- * Currently recommended headers to return with responses
+ * Currently recommended response headers. CORS-related headers are intentionally
+ * NOT emitted here; those belong to the CORS middleware. The legacy `Feature-Policy`
+ * header is omitted because it has been superseded by `Permissions-Policy` in all
+ * current browsers.
+ *
  * @ignore
  */
 const RecommendedHeaders: Record<string, string> = {
-    'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, User-Agent',
-    'Access-Control-Allow-Methods': 'GET, HEAD, POST, PUT, DELETE, CONNECT, OPTIONS, TRACE, PATCH',
     'Cache-Control': 'max-age=30, public',
     'Referrer-Policy': 'no-referrer',
-    'Feature-Policy': [
-        'accelerometer',
-        'autoplay',
-        'camera',
-        'fullscreen',
-        'geolocation',
-        'gyroscope',
-        'magnetometer',
-        'microphone',
-        'payment',
-        'sync-xhr'
-    ].map(elem => `${elem} 'none'`)
-        .join('; ').trim(),
     'Permissions-Policy': [
         'geolocation',
         'midi',
@@ -52,13 +41,9 @@ const RecommendedHeaders: Record<string, string> = {
         'gyroscope',
         'fullscreen',
         'payment'
-    ].map(elem => {
-        if (elem === 'fullscreen') {
-            return `${elem}=(self)`;
-        }
-
-        return `${elem}=()`;
-    }).join(', ').trim()
+    ].map(elem => elem === 'fullscreen' ? `${elem}=(self)` : `${elem}=()`)
+        .join(', ').trim(),
+    'X-Content-Type-Options': 'nosniff'
 };
 
 export default function middleware () {

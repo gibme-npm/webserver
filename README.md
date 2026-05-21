@@ -38,18 +38,20 @@ Logger.info('Listening on: %s', app.url);
 
 - Automatic request body parsing (JSON, URL-encoded, raw, text, XML)
 - Authorization header decoding (Basic, Bearer, JWT)
-- WebSocket support via `.ws()` routes
+- WebSocket support via `.ws()` routes, with optional per-route and app-level authentication
 - Session support with an in-memory store
 - Cookie parsing and signing
-- Protected routes with pluggable authentication
+- Protected routes with pluggable authentication (route-scoped, predictable mount-order behavior)
 - Request ID injection (`X-Request-ID`)
 - Response time tracking (`X-Response-Time`)
 - Client IP resolution through proxies and Cloudflare
-- Compression, Helmet, CORS, and CSP middleware
+- Compression, Helmet, CORS (with full preflight handling), and CSP middleware
+- Rate limiting and CSRF middleware
 - Optional route parameters (`:id?`)
+- Optional `errorSink` to surface internal swallowed errors for observability
 - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) integration for development
 - Static file serving
-- Mountable [Model Context Protocol](https://modelcontextprotocol.io/) server (tools, resources, prompts) over Streamable HTTP
+- Mountable [Model Context Protocol](https://modelcontextprotocol.io/) server (tools, resources, prompts) over Streamable HTTP, with optional per-session idle/max-age cleanup
 
 ## Configuration
 
@@ -63,7 +65,7 @@ const app = WebServer({
     backlog: 511,
     bodyLimit: 2,                        // MB
     compression: true,
-    corsOrigin: '*',
+    corsOrigin: '*',                     // or full CorsOptions object
     helmet: false,                       // or HelmetOptions
     sessions: false,                     // or true or SessionOptions
     logging: false,                      // or true, 'full', or callback
@@ -76,11 +78,13 @@ const app = WebServer({
     autoParseText: true,
     autoParseXML: true,
     autoRecommendedHeaders: false,
-    autoContentSecurityPolicyHeaders: false,
+    autoContentSecurityPolicyHeaders: false,  // or true, or a CSPDirectives object
     autoStartCloudflared: false,
     suppressProcessErrors: true,
     xml: {},                             // parser and validator options
-    wsOptions: {}                        // ws.ServerOptions
+    wsOptions: {},                       // ws.ServerOptions
+    wsAuth: undefined,                   // optional AuthenticationProvider applied to every WS route
+    errorSink: undefined                 // optional (error, context) => void for internal swallowed errors
 });
 ```
 
@@ -127,6 +131,22 @@ app.use(adminRouter);            // mount at root
 ```
 
 Because `ProtectedRouter()` returns a real `express.Router`, all router methods are available (`get`, `post`, `put`, `patch`, `delete`, `head`, `options`, `route`, `use`, etc.) and instances can be nested or reused across apps.
+
+The gate is **route-scoped**: it fires only on routes registered via verb methods (`get`/`post`/`put`/`patch`/`delete`/`head`/`options`/`all`/`connect`/`trace`) or `route()`. Middleware registered via `router.use(...)` is intentionally NOT auto-gated, so a root-mounted ProtectedRouter does not interfere with routes mounted after it:
+
+```typescript
+const app = WebServer();
+const protectedRouter = ProtectedRouter();
+protectedRouter.setAuthenticationProvider(async () => false);  // deny everything
+protectedRouter.get('/private', (_req, res) => res.send('never reached'));
+
+app.use(protectedRouter);
+
+// /public is NOT gated even though it is mounted AFTER the ProtectedRouter
+app.get('/public', (_req, res) => res.send('ok'));
+```
+
+Unregistered paths return 404 (handled by `autoHandle404`), not 401. Callers who want middleware to participate in the gate should compose it inside a verb-registered handler or attach the gate themselves.
 
 ## MCP Server
 
@@ -200,6 +220,23 @@ mcp.setAuthenticationProvider(async (request) =>
 app.use('/mcp', mcp);
 ```
 
+### Per-session lifecycle
+
+Long-running services that accept many short-lived MCP sessions without an explicit DELETE can leak transports. `MCP.Router` accepts an optional `MCP.SessionOptions` argument to bound the per-session transport map:
+
+```typescript
+app.use('/mcp', MCP.Router({
+    implementation: { name: 'my-server', version: '1.0.0' },
+    tools: [ /* ... */ ]
+}, {
+    idleTimeoutMs: 5 * 60_000,    // close sessions idle for 5 minutes
+    maxAgeMs: 60 * 60_000,        // close sessions older than 1 hour
+    maxSessions: 1000             // evict oldest when the cap is reached
+}));
+```
+
+The sweep timer is started lazily on the first initialized session and stopped when the session map empties. All three controls are optional; setting none preserves the previous always-keep behavior.
+
 ## WebSocket Routes
 
 Register WebSocket handlers with Express-style routing:
@@ -228,6 +265,49 @@ router.ws('/events', (socket) => { /* ... */ });
 app.use('/api', router);
 ```
 
+### Authentication
+
+WebSocket upgrade requests are decorated with `request.authorization`, `request.cookies`, and `request.signedCookies` (parsed from the upgrade headers using the same secrets as the HTTP path), so handlers can read them like any HTTP request:
+
+```typescript
+app.ws('/echo', (socket, request) => {
+    console.log(request.authorization?.bearer?.token);
+    console.log(request.cookies?.sessionId);
+});
+```
+
+Three layers of authentication are supported:
+
+**Per-route**: pass an `AuthenticationProvider` between the route and handler.
+
+```typescript
+app.ws('/secure',
+    async (request) => request.authorization?.bearer?.token === process.env.WS_TOKEN,
+    (socket) => socket.send('hello, authenticated client'));
+```
+
+**`ProtectedRouter` inheritance**: a `ProtectedRouter` passed through `app.wsApplyTo(...)` automatically threads its provider to every `ws()` route registered on it. Calling `setAuthenticationProvider` updates both HTTP and WS authentication uniformly:
+
+```typescript
+const protectedRouter = ProtectedRouter();
+protectedRouter.setAuthenticationProvider(async (request) =>
+    request.authorization?.bearer?.token === process.env.API_TOKEN);
+
+const wsProtected = app.wsApplyTo(protectedRouter, '/api');
+wsProtected.ws('/stream', (socket) => { /* ... */ });
+app.use(wsProtected);
+```
+
+**App-level fallback**: the `wsAuth` option on `WebServer()` gates every WS route that does not specify its own provider. Per-route auth overrides the fallback:
+
+```typescript
+const app = WebServer({
+    wsAuth: async (request) => request.authorization?.bearer?.token === process.env.WS_TOKEN
+});
+```
+
+On deny, the upgrade is rejected with a raw HTTP response (default `401 Unauthorized`, or the `{ statusCode, message }` returned by the provider) and the socket is destroyed without completing the upgrade handshake.
+
 ## Sessions
 
 Enable in-memory sessions backed by [node-cache](https://www.npmjs.com/package/node-cache):
@@ -255,6 +335,96 @@ const app = WebServer({
     }
 });
 ```
+
+## CORS
+
+The `corsOrigin` option accepts either a string (single allowed origin, the legacy form) or a full options bag for fine-grained control:
+
+```typescript
+const app = WebServer({
+    corsOrigin: {
+        origin: 'https://app.example.com',     // string | string[] | RegExp | (req) => string | false
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type', 'X-Custom'],
+        exposedHeaders: ['X-Request-ID'],
+        credentials: true,
+        maxAge: 600,
+        preflightContinue: false
+    }
+});
+```
+
+Preflight `OPTIONS` requests are answered directly with `204 No Content` and the negotiated headers (set `preflightContinue: true` to forward them to the route handler). When `credentials: true`, the wildcard origin `*` is reflected to the request's actual `Origin` header instead of being emitted literally.
+
+## Content Security Policy
+
+`autoContentSecurityPolicyHeaders` accepts `true` to apply the default `default-src 'self'`, or an object of directives to fully override:
+
+```typescript
+const app = WebServer({
+    autoContentSecurityPolicyHeaders: {
+        'default-src': "'self'",
+        'img-src': ['*', 'data:'],
+        'upgrade-insecure-requests': ''
+    }
+});
+```
+
+## Rate Limiting
+
+Lightweight in-memory rate limiter built on `node-cache`. Plug in your own store for distributed deployments.
+
+```typescript
+import WebServer, { RateLimit } from '@gibme/webserver';
+
+const app = WebServer();
+
+app.use(RateLimit({
+    windowMs: 60_000,
+    max: 100,
+    standardHeaders: true,        // emit RateLimit-* per draft-ietf-httpapi-ratelimit-headers
+    legacyHeaders: false          // emit X-RateLimit-* (default off)
+}));
+```
+
+Override the default key (`request.remoteIp`) with `keyGenerator`, exempt specific requests with `skip`, or supply a custom `handler` for the deny response. Provide `store` (an object exposing `get`, `set`, `clear`) to back the limiter with Redis or another shared cache.
+
+## CSRF
+
+Double-submit cookie pattern, OWASP-recommended. No session storage required.
+
+```typescript
+import WebServer, { CSRF } from '@gibme/webserver';
+
+const app = WebServer({ cookieSecret: process.env.COOKIE_SECRET });
+
+app.use(CSRF({ secret: process.env.COOKIE_SECRET }));
+
+app.get('/form', (request, response) => {
+    return response.send(`<form method="POST" action="/submit">
+        <input type="hidden" name="_csrf" value="${request.csrfToken!()}">
+        <button>Submit</button>
+    </form>`);
+});
+
+app.post('/submit', (_request, response) => response.json({ ok: true }));
+```
+
+Safe methods (`GET`, `HEAD`, `OPTIONS`) seed the signed cookie and expose `request.csrfToken()` for templates to embed. Unsafe methods read the token from the `x-csrf-token` header or the `_csrf` body field and compare against the signed cookie using a constant-time comparison; a mismatch returns `403`.
+
+The default cookie name uses the `__Host-` prefix, which requires `Secure`, no `Domain`, and `Path=/`. Override `cookieName` and `cookieOptions` for HTTP dev environments where the prefix cannot be honored.
+
+## Error Sink
+
+Several middleware paths intentionally swallow non-fatal internal errors (a malformed `Authorization` header, an unparseable JSON cookie, a throwing logging callback). Set `errorSink` to surface them for observability without changing request behavior:
+
+```typescript
+const app = WebServer({
+    errorSink: (error, context) => Logger.warn('[%s] %s', context, error)
+});
+```
+
+Context values are stable strings: `'authorization-decode'`, `'cookie-json-parse'`, `'logging-callback'`, `'rate-limit-store'`, `'csrf-verify'`, `'websocket-auth'`, `'websocket-write'`. Sink calls that throw are caught and discarded so a misbehaving sink cannot disrupt request handling.
 
 ## Optional Route Parameters
 
@@ -346,9 +516,31 @@ import WebServer, {
     multer,
     zod,
     MCP,
-    Proxy
+    Proxy,
+    RateLimit,
+    CSRF,
+    createInMemoryRateLimitStore
 } from '@gibme/webserver';
-import type { Request, Response, AuthenticationProvider } from '@gibme/webserver';
+import type {
+    Request,
+    Response,
+    AuthenticationProvider,
+    AuthenticationResult,
+    CorsOptions,
+    CorsOrigin,
+    CSPDirectives,
+    ErrorSink,
+    ErrorSinkContext,
+    LogEntry,
+    RateLimitOptions,
+    RateLimitStore,
+    RateLimitBucket,
+    RateLimitInfo,
+    CSRFOptions,
+    CSRFSecret,
+    XMLParserOptions,
+    XMLValidatorOptions
+} from '@gibme/webserver';
 ```
 
 ## Documentation

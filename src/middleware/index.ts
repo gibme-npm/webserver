@@ -29,10 +29,23 @@ import ContentSecurityPolicy from './csp_headers';
 import ProtectedRouter from './protected';
 import ResponseTime from './response_time';
 import XMLParser from './xml';
+import RateLimit from './rate_limit';
+import CSRF from './csrf';
 
 export { LogEntry } from './logging';
-export { AuthenticationProvider } from './protected';
+export { AuthenticationProvider, AuthenticationResult, runAuthenticationProvider } from './protected';
 export { XMLParserOptions, XMLValidatorOptions } from './xml';
+export { CorsOptions, CorsOrigin } from './cors';
+export { CSPDirectives } from './csp_headers';
+export { ErrorSink, ErrorSinkContext } from './error_sink';
+export {
+    RateLimitOptions,
+    RateLimitStore,
+    RateLimitBucket,
+    RateLimitInfo,
+    createInMemoryRateLimitStore
+} from './rate_limit';
+export { CSRFOptions, CSRFSecret } from './csrf';
 
 export default {
     Logging,
@@ -45,5 +58,7 @@ export default {
     ContentSecurityPolicy,
     ProtectedRouter,
     ResponseTime,
-    XMLParser
+    XMLParser,
+    RateLimit,
+    CSRF
 };

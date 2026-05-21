@@ -29,6 +29,43 @@ import { v4 as uuid } from 'uuid';
 
 export type McpRouter = ProtectedRouter;
 
+/**
+ * Optional per-session lifecycle controls for the MCP transport map. When unset,
+ * the router keeps every initialized session until its transport closes or the
+ * client sends DELETE. Long-lived deployments that see many short clients without
+ * an explicit DELETE should set at least `idleTimeoutMs`.
+ */
+export type McpSessionOptions = {
+    /**
+     * Close sessions whose last successful dispatch was longer than this many
+     * milliseconds ago. Refreshed on every POST/GET/DELETE that lands on the
+     * session's transport.
+     */
+    idleTimeoutMs?: number;
+    /**
+     * Close sessions older than this many milliseconds regardless of activity.
+     */
+    maxAgeMs?: number;
+    /**
+     * Cap on the number of concurrent sessions. When a new session would push
+     * the total above the cap, the oldest (least-recently-active) session is
+     * evicted before the new one is admitted.
+     */
+    maxSessions?: number;
+    /**
+     * Sweep interval in milliseconds. Defaults to `min(idleTimeoutMs, maxAgeMs) / 4`
+     * capped at 60 seconds. Ignored when neither idle nor max-age is set.
+     */
+    sweepIntervalMs?: number;
+};
+
+/** @ignore */
+type SessionRecord = {
+    transport: StreamableHTTPServerTransport;
+    createdAt: number;
+    lastActivityAt: number;
+};
+
 /** @ignore */
 const json_rpc_error = (code: number, message: string) => ({
     jsonrpc: '2.0' as const,
@@ -75,31 +112,116 @@ const safe_dispatch = async (
  *   server is fully described by its declarative primitive list.
  *
  * @param create_server Factory invoked once per new client session to build the `McpServer`.
+ * @param sessionOptions Optional per-session lifecycle controls (idle timeout, max age, cap).
  */
-export function McpRouter (create_server: () => McpServer): McpRouter;
+export function McpRouter (create_server: () => McpServer, sessionOptions?: McpSessionOptions): McpRouter;
 /**
  * @param config Declarative `McpServerConfig` bundle. A fresh `McpServer` is built per
  *               session by passing this config to `create_mcp_server`.
+ * @param sessionOptions Optional per-session lifecycle controls.
  */
-export function McpRouter (config: McpServerConfig): McpRouter;
-export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRouter {
+export function McpRouter (config: McpServerConfig, sessionOptions?: McpSessionOptions): McpRouter;
+export function McpRouter (
+    source: (() => McpServer) | McpServerConfig,
+    sessionOptions?: McpSessionOptions
+): McpRouter {
     const create_server: () => McpServer = typeof source === 'function'
         ? source
         : () => create_mcp_server(source);
 
     const router = ProtectedRouter();
 
-    const transports = new Map<string, StreamableHTTPServerTransport>();
+    const sessions = new Map<string, SessionRecord>();
+
+    const idleTimeoutMs = sessionOptions?.idleTimeoutMs;
+    const maxAgeMs = sessionOptions?.maxAgeMs;
+    const maxSessions = sessionOptions?.maxSessions;
+
+    const computeSweepInterval = (): number | undefined => {
+        if (sessionOptions?.sweepIntervalMs) {
+            return sessionOptions.sweepIntervalMs;
+        }
+        const candidates = [idleTimeoutMs, maxAgeMs].filter((v): v is number => typeof v === 'number' && v > 0);
+        if (candidates.length === 0) return undefined;
+        return Math.min(60_000, Math.max(50, Math.floor(Math.min(...candidates) / 4)));
+    };
+
+    const sweepIntervalMs = computeSweepInterval();
+    let sweepTimer: NodeJS.Timeout | undefined;
+
+    const removeSession = (sessionId: string, reason: string) => {
+        const record = sessions.get(sessionId);
+        if (!record) return;
+        sessions.delete(sessionId);
+        Logger.debug('MCP session %s evicted (%s)', sessionId, reason);
+        record.transport.close().catch(() => { /* ignore close failures */ });
+    };
+
+    const sweep = () => {
+        if (!idleTimeoutMs && !maxAgeMs) return;
+        const now = Date.now();
+        for (const [sessionId, record] of sessions) {
+            if (idleTimeoutMs && now - record.lastActivityAt > idleTimeoutMs) {
+                removeSession(sessionId, 'idle-timeout');
+                continue;
+            }
+            if (maxAgeMs && now - record.createdAt > maxAgeMs) {
+                removeSession(sessionId, 'max-age');
+            }
+        }
+        if (sessions.size === 0) {
+            stopSweeper();
+        }
+    };
+
+    const startSweeper = () => {
+        if (sweepTimer || !sweepIntervalMs) return;
+        sweepTimer = setInterval(sweep, sweepIntervalMs);
+        if (typeof sweepTimer.unref === 'function') {
+            sweepTimer.unref();
+        }
+    };
+
+    const stopSweeper = () => {
+        if (!sweepTimer) return;
+        clearInterval(sweepTimer);
+        sweepTimer = undefined;
+    };
+
+    const touch = (sessionId: string | undefined) => {
+        if (!sessionId) return;
+        const record = sessions.get(sessionId);
+        if (record) {
+            record.lastActivityAt = Date.now();
+        }
+    };
+
+    const evictOldestIfNeeded = () => {
+        if (!maxSessions) return;
+        while (sessions.size >= maxSessions) {
+            let oldestId: string | undefined;
+            let oldestActivity = Infinity;
+            for (const [id, record] of sessions) {
+                if (record.lastActivityAt < oldestActivity) {
+                    oldestActivity = record.lastActivityAt;
+                    oldestId = id;
+                }
+            }
+            if (!oldestId) break;
+            removeSession(oldestId, 'max-sessions');
+        }
+    };
 
     router.post('/', async (request, response) => {
         const session_id = request.header('mcp-session-id');
 
         if (session_id) {
-            const transport = transports.get(session_id);
-            if (!transport) {
+            const record = sessions.get(session_id);
+            if (!record) {
                 return response.status(404).send();
             }
-            return safe_dispatch('POST dispatch', transport, request, response, request.body);
+            touch(session_id);
+            return safe_dispatch('POST dispatch', record.transport, request, response, request.body);
         }
 
         if (!isInitializeRequest(request.body)) {
@@ -108,17 +230,22 @@ export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRout
             );
         }
 
+        evictOldestIfNeeded();
+
         const server = create_server();
         const transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => uuid(),
             onsessioninitialized: id => {
-                transports.set(id, transport);
+                const now = Date.now();
+                sessions.set(id, { transport, createdAt: now, lastActivityAt: now });
+                if (sweepIntervalMs) startSweeper();
             }
         });
 
         transport.onclose = () => {
             if (transport.sessionId) {
-                transports.delete(transport.sessionId);
+                sessions.delete(transport.sessionId);
+                if (sessions.size === 0) stopSweeper();
             }
         };
 
@@ -127,7 +254,7 @@ export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRout
         } catch (error) {
             Logger.error('MCP session initialization failed: %s', error);
             if (transport.sessionId) {
-                transports.delete(transport.sessionId);
+                sessions.delete(transport.sessionId);
             }
             await transport.close().catch(() => {});
             if (!response.headersSent) {
@@ -149,11 +276,12 @@ export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRout
         if (!session_id) {
             return response.status(400).json(json_rpc_error(-32000, 'Missing session ID'));
         }
-        const transport = transports.get(session_id);
-        if (!transport) {
+        const record = sessions.get(session_id);
+        if (!record) {
             return response.status(404).end();
         }
-        return safe_dispatch('GET stream', transport, request, response);
+        touch(session_id);
+        return safe_dispatch('GET stream', record.transport, request, response);
     });
 
     router.delete('/', async (request, response) => {
@@ -161,14 +289,15 @@ export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRout
         if (!session_id) {
             return response.status(400).json(json_rpc_error(-32000, 'Missing session ID'));
         }
-        const transport = transports.get(session_id);
-        if (!transport) {
+        const record = sessions.get(session_id);
+        if (!record) {
             return response.status(404).end();
         }
         try {
-            await safe_dispatch('DELETE', transport, request, response);
+            await safe_dispatch('DELETE', record.transport, request, response);
         } finally {
-            transports.delete(session_id);
+            sessions.delete(session_id);
+            if (sessions.size === 0) stopSweeper();
         }
     });
 

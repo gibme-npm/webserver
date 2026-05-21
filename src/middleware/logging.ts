@@ -21,6 +21,7 @@
 import type express from 'express';
 import Logger from '@gibme/logger';
 import type { IncomingHttpHeaders } from 'http';
+import { ErrorSink, invoke_error_sink } from './error_sink';
 
 export type LogEntry<BodyType = any> = {
     timestamp: number;
@@ -39,7 +40,10 @@ export type LogEntry<BodyType = any> = {
 export const now = () =>
     Math.floor((new Date()).getTime() / 1000);
 
-export default function middleware (logging: boolean | 'full' | ((entry: LogEntry) => Promise<void> | void)) {
+export default function middleware (
+    logging: boolean | 'full' | ((entry: LogEntry) => Promise<void> | void),
+    errorSink?: ErrorSink
+) {
     return (request: express.Request, response: express.Response, next: express.NextFunction) => {
         const isCallback = typeof logging === 'function';
 
@@ -76,7 +80,9 @@ export default function middleware (logging: boolean | 'full' | ((entry: LogEntr
             if (isCallback) {
                 try {
                     await logging(entry);
-                } catch {}
+                } catch (error) {
+                    invoke_error_sink(errorSink, error, 'logging-callback');
+                }
             } else if (logging) {
                 Logger.debug(JSON.stringify(entry));
             }

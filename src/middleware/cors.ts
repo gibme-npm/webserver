@@ -20,17 +20,144 @@
 
 import type express from 'express';
 
-export default function middleware (corsOrigin: string) {
-    corsOrigin = corsOrigin.trim();
+export type CorsOrigin =
+    | string
+    | string[]
+    | RegExp
+    | ((request: express.Request) => string | false);
 
-    return (_request: express.Request, response: express.Response, next: express.NextFunction) => {
-        if (corsOrigin) {
-            response.header('Access-Control-Allow-Origin', corsOrigin);
-            response.header('X-Requested-With', '*');
-            response.header('Access-Control-Allow-Headers', '*');
-            response.header('Access-Control-Allow-Methods', '*');
+export type CorsOptions = {
+    origin?: CorsOrigin;
+    methods?: string[];
+    allowedHeaders?: string[];
+    exposedHeaders?: string[];
+    credentials?: boolean;
+    maxAge?: number;
+    preflightContinue?: boolean;
+    optionsSuccessStatus?: number;
+};
+
+const DEFAULT_METHODS = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'];
+
+const resolve_origin = (
+    origin: CorsOrigin | undefined,
+    request: express.Request,
+    credentials: boolean
+): string | undefined => {
+    if (origin === undefined || origin === null || origin === '') {
+        return undefined;
+    }
+
+    const requestOrigin = request.header('origin');
+
+    if (typeof origin === 'string') {
+        if (origin === '*') {
+            return credentials
+                ? (requestOrigin || undefined)
+                : '*';
         }
 
-        return next();
+        return origin;
+    }
+
+    if (Array.isArray(origin)) {
+        return requestOrigin && origin.includes(requestOrigin) ? requestOrigin : undefined;
+    }
+
+    if (origin instanceof RegExp) {
+        return requestOrigin && origin.test(requestOrigin) ? requestOrigin : undefined;
+    }
+
+    if (typeof origin === 'function') {
+        const resolved = origin(request);
+        return resolved === false ? undefined : resolved;
+    }
+
+    return undefined;
+};
+
+const append_vary = (response: express.Response, value: string) => {
+    const existing = response.getHeader('Vary');
+
+    if (!existing) {
+        response.setHeader('Vary', value);
+        return;
+    }
+
+    const current = Array.isArray(existing) ? existing.join(', ') : String(existing);
+
+    if (current.split(',').map(s => s.trim().toLowerCase()).includes(value.toLowerCase())) {
+        return;
+    }
+
+    response.setHeader('Vary', `${current}, ${value}`);
+};
+
+export default function middleware (corsOrigin: string | CorsOptions) {
+    const options: CorsOptions = typeof corsOrigin === 'string'
+        ? { origin: corsOrigin.trim() || undefined }
+        : { ...corsOrigin };
+
+    return (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        if (options.origin === undefined || options.origin === '') {
+            return next();
+        }
+
+        const resolvedOrigin = resolve_origin(options.origin, request, !!options.credentials);
+
+        if (resolvedOrigin) {
+            response.header('Access-Control-Allow-Origin', resolvedOrigin);
+
+            if (resolvedOrigin !== '*') {
+                append_vary(response, 'Origin');
+            }
+        }
+
+        if (options.credentials) {
+            response.header('Access-Control-Allow-Credentials', 'true');
+        }
+
+        if (options.exposedHeaders && options.exposedHeaders.length > 0) {
+            response.header('Access-Control-Expose-Headers', options.exposedHeaders.join(', '));
+        }
+
+        const isPreflight = request.method === 'OPTIONS' && !!request.header('access-control-request-method');
+
+        if (!isPreflight) {
+            return next();
+        }
+
+        const methods = options.methods && options.methods.length > 0
+            ? options.methods
+            : DEFAULT_METHODS;
+
+        response.header('Access-Control-Allow-Methods', methods.join(', '));
+
+        let allowedHeaders = options.allowedHeaders;
+
+        if (!allowedHeaders) {
+            const requested = request.header('access-control-request-headers');
+
+            if (requested) {
+                allowedHeaders = requested.split(',').map(h => h.trim()).filter(Boolean);
+            }
+        }
+
+        if (allowedHeaders && allowedHeaders.length > 0) {
+            response.header('Access-Control-Allow-Headers', allowedHeaders.join(', '));
+            append_vary(response, 'Access-Control-Request-Headers');
+        }
+
+        if (typeof options.maxAge === 'number') {
+            response.header('Access-Control-Max-Age', String(options.maxAge));
+        }
+
+        if (options.preflightContinue) {
+            return next();
+        }
+
+        const status = options.optionsSuccessStatus ?? 204;
+        response.status(status).setHeader('Content-Length', '0');
+        return response.end();
     };
 }

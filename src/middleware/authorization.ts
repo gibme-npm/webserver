@@ -1,4 +1,4 @@
-// Copyright (c) 2025, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2018-2025, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import type express from 'express';
+import { ErrorSink, invoke_error_sink } from './error_sink';
 
 declare global {
     namespace Express {
@@ -78,51 +79,79 @@ declare global {
     }
 }
 
-export default function middleware () {
-    return (request: express.Request, _response: express.Response, next: express.NextFunction) => {
-        const authorization = request.header('authorization');
+export type AuthorizationData = NonNullable<express.Request['authorization']>;
 
-        if (authorization) {
-            try {
-                const [type, token] = authorization.split(' ', 2);
+/**
+ * Pure parser exported so transports beyond the HTTP middleware chain (e.g. the
+ * WebSocket upgrade path) can populate `request.authorization` consistently. Returns
+ * undefined when no recognizable Basic or Bearer value can be extracted.
+ */
+export const parse_authorization_header = (
+    headerValue: string | undefined,
+    errorSink?: ErrorSink
+): AuthorizationData | undefined => {
+    if (!headerValue) return undefined;
 
-                if (type.toLowerCase() === 'basic') {
-                    const decoded = Buffer.from(token, 'base64').toString();
-                    const idx = decoded.indexOf(':');
+    try {
+        const [type, token] = headerValue.split(' ', 2);
 
-                    if (idx !== -1) {
-                        const username = decoded.substring(0, idx);
-                        const password = decoded.substring(idx + 1);
-                        request.authorization = {
-                            type: 'Basic',
-                            basic: {
-                                username,
-                                password
-                            }
+        if (!type || !token) return undefined;
+
+        if (type.toLowerCase() === 'basic') {
+            const decoded = Buffer.from(token, 'base64').toString();
+            const idx = decoded.indexOf(':');
+
+            if (idx === -1) return undefined;
+
+            return {
+                type: 'Basic',
+                basic: {
+                    username: decoded.substring(0, idx),
+                    password: decoded.substring(idx + 1)
+                }
+            };
+        }
+
+        if (type.toLowerCase() === 'bearer') {
+            const data: AuthorizationData = {
+                type: 'Bearer',
+                bearer: { token }
+            };
+
+            if (token.includes('.')) {
+                try {
+                    const [header, payload, signature] = token.split('.');
+
+                    if (header && payload && signature) {
+                        data.jwt = {
+                            header: JSON.parse(Buffer.from(header, 'base64url').toString()),
+                            payload: JSON.parse(Buffer.from(payload, 'base64url').toString()),
+                            signature
                         };
                     }
-                } else if (type.toLowerCase() === 'bearer') {
-                    request.authorization = {
-                        type: 'Bearer',
-                        bearer: {
-                            token
-                        }
-                    };
-
-                    if (token.includes('.')) {
-                        const [header, payload, signature] = token.split('.');
-
-                        if (header && payload && signature) {
-                            request.authorization.jwt = {
-                                header: JSON.parse(Buffer.from(header, 'base64url').toString()),
-                                payload: JSON.parse(Buffer.from(payload, 'base64url').toString()),
-                                signature
-                            };
-                        }
-                    }
+                } catch (error) {
+                    invoke_error_sink(errorSink, error, 'authorization-decode');
+                    // bearer token is still valid even if it isn't a JWT;
+                    // surface the decode failure but keep the bearer data.
                 }
-            } catch {
             }
+
+            return data;
+        }
+
+        return undefined;
+    } catch (error) {
+        invoke_error_sink(errorSink, error, 'authorization-decode');
+        return undefined;
+    }
+};
+
+export default function middleware (errorSink?: ErrorSink) {
+    return (request: express.Request, _response: express.Response, next: express.NextFunction) => {
+        const authorization = parse_authorization_header(request.header('authorization'), errorSink);
+
+        if (authorization) {
+            request.authorization = authorization;
         }
 
         return next();

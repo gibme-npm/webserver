@@ -20,9 +20,42 @@
 
 import type express from 'express';
 
-type AuthenticationResult = boolean | { statusCode: number; message?: any; };
+type AuthenticationDecision = boolean | { statusCode: number; message?: any; };
 
-export type AuthenticationProvider = (request: express.Request) => Promise<AuthenticationResult> | AuthenticationResult;
+export type AuthenticationProvider = (
+    request: express.Request
+) => Promise<AuthenticationDecision> | AuthenticationDecision;
+
+export type AuthenticationResult =
+    | { ok: true }
+    | { ok: false; statusCode: number; message?: any };
+
+/**
+ * Invokes an AuthenticationProvider against a request and normalizes the result.
+ * Used by the HTTP gate middleware and the WebSocket upgrade path so both consume
+ * the same decision semantics.
+ *
+ * Decision normalization:
+ * - `true`  -> { ok: true }
+ * - `false` -> { ok: false, statusCode: 401, message: 'Unauthorized' }
+ * - `{ statusCode, message? }` passed through.
+ */
+export async function runAuthenticationProvider (
+    provider: AuthenticationProvider,
+    request: express.Request
+): Promise<AuthenticationResult> {
+    const decision = await provider(request);
+
+    if (decision === true) {
+        return { ok: true };
+    }
+
+    if (decision === false) {
+        return { ok: false, statusCode: 401, message: 'Unauthorized' };
+    }
+
+    return { ok: false, statusCode: decision.statusCode, message: decision.message };
+}
 
 export default function middleware (getProvider: () => AuthenticationProvider | undefined) {
     return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
@@ -32,32 +65,26 @@ export default function middleware (getProvider: () => AuthenticationProvider | 
             return next();
         }
 
-        const authentication_result = await provider(request);
+        const result = await runAuthenticationProvider(provider, request);
 
-        if (typeof authentication_result !== 'boolean') {
-            const { statusCode, message } = authentication_result;
-
-            if (typeof message === 'string') {
-                response.setHeader('Content-Type', 'text/plain');
-
-                return response.status(statusCode).send(message);
-            } else if (message) {
-                response.setHeader('Content-Type', 'application/json');
-
-                return response.status(statusCode).json(message);
-            } else {
-                response.setHeader('Content-Type', 'text/plain');
-
-                return response.status(statusCode).send();
-            }
+        if (result.ok) {
+            return next();
         }
 
-        if (!authentication_result) {
+        const { statusCode, message } = result;
+
+        if (typeof message === 'string') {
             response.setHeader('Content-Type', 'text/plain');
 
-            return response.status(401).send('Unauthorized');
-        }
+            return response.status(statusCode).send(message);
+        } else if (message) {
+            response.setHeader('Content-Type', 'application/json');
 
-        return next();
+            return response.status(statusCode).json(message);
+        } else {
+            response.setHeader('Content-Type', 'text/plain');
+
+            return response.status(statusCode).send();
+        }
     };
 }

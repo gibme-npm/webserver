@@ -22,6 +22,7 @@ import type express from 'express';
 import { parse } from 'cookie';
 import { unsign } from 'cookie-signature';
 import type { CipherKey } from 'crypto';
+import { ErrorSink, invoke_error_sink } from './error_sink';
 
 type CookieValue = string | object;
 type Cookies = { [key: string]: CookieValue };
@@ -34,103 +35,126 @@ declare global {
     }
 }
 
-export default function middleware (secrets: CipherKey | CipherKey[]) {
-    secrets = Array.isArray(secrets) ? secrets : [secrets];
+export type ParsedCookies = {
+    cookies: Cookies;
+    signedCookies: Cookies;
+};
 
-    const JSONCookie = (cookie: string): object | undefined => {
-        if (cookie.slice(0, 2) !== 'j:') {
-            return undefined;
+const JSONCookie = (cookie: string, errorSink?: ErrorSink): object | undefined => {
+    if (cookie.slice(0, 2) !== 'j:') {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(cookie.slice(2));
+    } catch (error) {
+        invoke_error_sink(errorSink, error, 'cookie-json-parse');
+        return undefined;
+    }
+};
+
+const JSONCookies = (cookies: Cookies, errorSink?: ErrorSink): Cookies => {
+    Object.keys(cookies).forEach(key => {
+        if (typeof cookies[key] !== 'string') {
+            return;
         }
 
-        try {
-            return JSON.parse(cookie.slice(2));
-        } catch {
-            return undefined;
+        const value = JSONCookie(cookies[key], errorSink);
+
+        if (value) {
+            cookies[key] = value;
         }
-    };
+    });
 
-    const JSONCookies = (cookies: Cookies): Cookies => {
-        Object.keys(cookies).forEach(key => {
-            if (typeof cookies[key] !== 'string') {
-                return;
-            }
+    return cookies;
+};
 
-            const value = JSONCookie(cookies[key]);
+const signedCookie = (cookie: string, secrets: CipherKey[]): string | false => {
+    if (cookie.slice(0, 2) !== 's:') {
+        return cookie;
+    }
 
-            if (value) {
-                cookies[key] = value;
-            }
-        });
+    for (let i = 0; i < secrets.length; i++) {
+        const value = unsign(cookie.slice(2), secrets[i]);
 
-        return cookies;
-    };
+        if (value !== false) {
+            return value;
+        }
+    }
 
-    const signedCookie = (cookie: string, secrets: CipherKey[]): string | false => {
-        if (cookie.slice(0, 2) !== 's:') {
-            return cookie;
+    return false;
+};
+
+const signedCookies = (
+    cookies: Cookies,
+    secrets: CipherKey[]
+): Cookies => {
+    const result: Cookies = Object.create(null);
+
+    Object.keys(cookies).forEach(key => {
+        const value = cookies[key];
+
+        if (typeof value !== 'string') {
+            return;
         }
 
-        for (let i = 0; i < secrets.length; i++) {
-            const value = unsign(cookie.slice(2), secrets[i]);
+        const decoded = signedCookie(value, secrets);
 
-            if (value !== false) {
-                return value;
-            }
+        if (decoded && value !== decoded) {
+            cookies[key] = result[key] = decoded;
         }
+    });
 
-        return false;
+    return result;
+};
+
+/**
+ * Pure parser exported so transports beyond the HTTP middleware chain (e.g. the
+ * WebSocket upgrade path) can populate `request.cookies` / `request.signedCookies`
+ * consistently. Returns empty maps when the cookie header is absent.
+ */
+export const parse_cookies = (
+    cookieHeader: string | undefined,
+    secrets: CipherKey[],
+    errorSink?: ErrorSink
+): ParsedCookies => {
+    const result: ParsedCookies = {
+        cookies: Object.create(null),
+        signedCookies: Object.create(null)
     };
 
-    const signedCookies = (
-        cookies: Cookies,
-        secrets: CipherKey[]
-    ): Cookies => {
-        const result: Cookies = Object.create(null);
+    if (!cookieHeader) return result;
 
-        Object.keys(cookies).forEach(key => {
-            const value = cookies[key];
+    const parsed = parse(cookieHeader);
 
-            if (typeof value !== 'string') {
-                return;
-            }
+    Object.keys(parsed).forEach(key => {
+        result.cookies[key] = parsed[key] as string;
+    });
 
-            const decoded = signedCookie(value, secrets);
+    if (secrets.length !== 0) {
+        result.signedCookies = signedCookies(result.cookies, secrets);
+        result.signedCookies = JSONCookies(result.signedCookies, errorSink);
+    }
 
-            if (decoded && value !== decoded) {
-                cookies[key] = result[key] = decoded;
-            }
-        });
+    result.cookies = JSONCookies(result.cookies, errorSink);
 
-        return result;
-    };
+    return result;
+};
+
+export default function middleware (secrets: CipherKey | CipherKey[], errorSink?: ErrorSink) {
+    const secretsArray = Array.isArray(secrets) ? secrets : [secrets];
 
     return (request: express.Request, _response: express.Response, next: express.NextFunction) => {
         if (typeof request.cookies !== 'undefined') {
             return next();
         }
 
-        request.secret = secrets[0].toString();
-        request.cookies = Object.create(null);
-        request.signedCookies = Object.create(null);
+        request.secret = secretsArray[0].toString();
 
-        const { cookie } = request.headers;
+        const parsed = parse_cookies(request.headers.cookie, secretsArray, errorSink);
 
-        if (!cookie) {
-            return next();
-        }
-
-        const cookies = parse(cookie);
-
-        Object.keys(cookies).forEach(key => {
-            request.cookies[key] = cookies[key];
-        });
-
-        if (secrets.length !== 0) {
-            request.signedCookies = signedCookies(request.cookies, secrets);
-            request.signedCookies = JSONCookies(request.signedCookies);
-        }
-
-        request.cookies = JSONCookies(request.cookies);
+        request.cookies = parsed.cookies;
+        request.signedCookies = parsed.signedCookies;
 
         return next();
     };
