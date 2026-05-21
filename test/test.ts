@@ -614,9 +614,13 @@ describe('Unit Tests', async () => {
                     client.close();
                     reject(new Error('expected upgrade to be rejected'));
                 });
-                client.once('unexpected-response', (_req, res) => {
+                client.once('unexpected-response', (req, res) => {
                     assert.strictEqual(res.statusCode, 401);
                     res.resume();
+                    // ws hands req off to the caller via unexpected-response and does not
+                    // close it. Without this, the client-side socket lingers and Node's
+                    // async-resource tracker reports late activity from the test scope.
+                    req.destroy();
                     resolve();
                 });
                 client.once('error', () => { /* swallow connection-error after the 401 */ });
@@ -647,9 +651,10 @@ describe('Unit Tests', async () => {
                     client.close();
                     reject(new Error('expected upgrade to be rejected'));
                 });
-                client.once('unexpected-response', (_req, res) => {
+                client.once('unexpected-response', (req, res) => {
                     assert.strictEqual(res.statusCode, 401);
                     res.resume();
+                    req.destroy();
                     resolve();
                 });
                 client.once('error', () => { /* swallow */ });
@@ -1093,9 +1098,10 @@ describe('WebSocket wsAuth Fallback', async () => {
                 client.close();
                 reject(new Error('expected reject'));
             });
-            client.once('unexpected-response', (_req, res) => {
+            client.once('unexpected-response', (req, res) => {
                 assert.strictEqual(res.statusCode, 401);
                 res.resume();
+                req.destroy();
                 resolve();
             });
             client.once('error', () => {});
@@ -1148,9 +1154,10 @@ describe('WebSocket Auth Timeout', async () => {
                 client.close();
                 reject(new Error('expected upgrade to be denied'));
             });
-            client.once('unexpected-response', (_req, res) => {
+            client.once('unexpected-response', (req, res) => {
                 assert.strictEqual(res.statusCode, 504);
                 res.resume();
+                req.destroy();
                 const elapsed = Date.now() - start;
                 assert.ok(elapsed < 2_000, `expected fast timeout, elapsed=${elapsed}ms`);
                 resolve();
