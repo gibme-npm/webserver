@@ -150,7 +150,11 @@ class Cloudflared extends EventEmitter {
     }
 
     public get ready (): boolean {
-        return this.dns_ready && this.https_ready;
+        // DNS + HTTPS alone can flip true via event-loop ordering before the
+        // cloudflared package has delivered any 'connected' event, leaving
+        // _connections empty when the consumer reads it. Require at least one
+        // captured connection to align ready with observable tunnel state.
+        return this.dns_ready && this.https_ready && this._connections.size > 0;
     }
 
     private _tunnel?: Tunnel;
@@ -248,8 +252,9 @@ class Cloudflared extends EventEmitter {
                 this._hostname = new URL(url).hostname;
             });
 
-            this._tunnel.once('connected', connection => {
-                this._connections.clear();
+            // cloudflared emits 'connected' once per edge connection (typically 4).
+            // Listen with on() so the full set is tracked, not just the first.
+            this._tunnel.on('connected', connection => {
                 this._connections.add(connection);
             });
 
@@ -302,13 +307,15 @@ class Cloudflared extends EventEmitter {
      */
     private async https_exists (): Promise<boolean> {
         try {
-            if (this.url) {
-                await fetch.get(this.url);
+            if (!this.url) return false;
 
-                return true;
-            } else {
-                return false;
-            }
+            // fetch resolves with a Response on any HTTP status, so a Cloudflare
+            // edge error (e.g. 530 when the tunnel data plane is unreachable)
+            // would otherwise be treated as "ready" and let ready fire on a
+            // tunnel that cannot carry traffic.
+            const response = await fetch.get(this.url);
+
+            return response.ok;
         } catch {
             return false;
         }
