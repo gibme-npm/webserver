@@ -18,12 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import WebServer, { Logger, ProtectedRouter } from '../src';
+import WebServer, { Logger, MCP, ProtectedRouter, zod } from '../src';
 import fetch, { CookieJar } from '@gibme/fetch';
 import { after, before, describe, it } from 'node:test';
 import WebSocket from 'ws';
 import assert from 'assert';
 import { v7 as uuid } from 'uuid';
+import { Client as McpClient } from '@modelcontextprotocol/sdk/client/index.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
 describe('Unit Tests', async () => {
     const app = WebServer.create({
@@ -78,6 +80,57 @@ describe('Unit Tests', async () => {
     protectedRouter.get('/protected', (_, response) => {
         return response.status(200).send();
     });
+
+    app.use('/mcp', MCP.Router({
+        implementation: { name: 'webserver-test-mcp', version: '0.0.0' },
+        tools: [{
+            name: 'add',
+            title: 'Add',
+            description: 'Adds two numbers',
+            inputSchema: { a: zod.number(), b: zod.number() },
+            outputSchema: { sum: zod.number() },
+            callback: async ({ a, b }) => ({
+                structuredContent: { sum: a + b },
+                content: [{ type: 'text', text: String(a + b) }]
+            })
+        }],
+        resources: [{
+            name: 'app-config',
+            uri: 'config://app',
+            metadata: { title: 'App Config', mimeType: 'application/json' },
+            readCallback: async uri => ({
+                contents: [{
+                    uri: uri.href,
+                    mimeType: 'application/json',
+                    text: JSON.stringify({ env: 'test' })
+                }]
+            })
+        }, {
+            kind: 'template',
+            name: 'user-profile',
+            template: new MCP.ResourceTemplate('users://{userId}/profile', { list: undefined }),
+            metadata: { title: 'User Profile' },
+            readCallback: async (uri, variables) => ({
+                contents: [{
+                    uri: uri.href,
+                    mimeType: 'application/json',
+                    text: JSON.stringify({ userId: String(variables.userId) })
+                }]
+            })
+        }],
+        prompts: [{
+            name: 'greet',
+            title: 'Greet',
+            description: 'Greets a person by name',
+            argsSchema: { name: zod.string() },
+            callback: async ({ name }) => ({
+                messages: [{
+                    role: 'user',
+                    content: { type: 'text', text: `Hello, ${name}!` }
+                }]
+            })
+        }]
+    }));
 
     app.use(protectedRouter);
 
@@ -319,6 +372,74 @@ describe('Unit Tests', async () => {
                     }
                 });
             });
+        });
+    });
+
+    describe('MCP', async () => {
+        let client: McpClient;
+        let transport: StreamableHTTPClientTransport;
+
+        before(async () => {
+            client = new McpClient({ name: 'webserver-test-client', version: '0.0.0' });
+            transport = new StreamableHTTPClientTransport(new URL(`${app.url}/mcp`));
+            await client.connect(transport);
+        });
+
+        after(async () => {
+            await client.close();
+            await transport.close();
+        });
+
+        it('List Tools', async () => {
+            const { tools } = await client.listTools();
+            assert.ok(tools.some(tool => tool.name === 'add'));
+        });
+
+        it('Call Tool', async () => {
+            const result = await client.callTool({ name: 'add', arguments: { a: 3, b: 4 } });
+            assert.deepEqual(result.structuredContent, { sum: 7 });
+        });
+
+        it('List Resources', async () => {
+            const { resources } = await client.listResources();
+            assert.ok(resources.some(resource => resource.uri === 'config://app'));
+        });
+
+        it('Read Static Resource', async () => {
+            const result = await client.readResource({ uri: 'config://app' });
+            const first = result.contents[0];
+            assert.ok(first && 'text' in first);
+            assert.deepEqual(JSON.parse(first.text as string), { env: 'test' });
+        });
+
+        it('List Resource Templates', async () => {
+            const { resourceTemplates } = await client.listResourceTemplates();
+            assert.ok(resourceTemplates.some(template =>
+                template.uriTemplate === 'users://{userId}/profile'));
+        });
+
+        it('Read Templated Resource', async () => {
+            const result = await client.readResource({ uri: 'users://42/profile' });
+            const first = result.contents[0];
+            assert.ok(first && 'text' in first);
+            assert.deepEqual(JSON.parse(first.text as string), { userId: '42' });
+        });
+
+        it('List Prompts', async () => {
+            const { prompts } = await client.listPrompts();
+            assert.ok(prompts.some(prompt => prompt.name === 'greet'));
+        });
+
+        it('Get Prompt', async () => {
+            const result = await client.getPrompt({
+                name: 'greet',
+                arguments: { name: 'Brandon' }
+            });
+            assert.equal(result.messages.length, 1);
+            const message = result.messages[0];
+            assert.equal(message.role, 'user');
+            assert.equal(message.content.type, 'text');
+            assert.equal((message.content as { text: string }).text, 'Hello, Brandon!');
         });
     });
 });

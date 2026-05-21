@@ -49,6 +49,7 @@ Logger.info('Listening on: %s', app.url);
 - Optional route parameters (`:id?`)
 - [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) integration for development
 - Static file serving
+- Mountable [Model Context Protocol](https://modelcontextprotocol.io/) server (tools, resources, prompts) over Streamable HTTP
 
 ## Configuration
 
@@ -126,6 +127,78 @@ app.use(adminRouter);            // mount at root
 ```
 
 Because `ProtectedRouter()` returns a real `express.Router`, all router methods are available (`get`, `post`, `put`, `patch`, `delete`, `head`, `options`, `route`, `use`, etc.) and instances can be nested or reused across apps.
+
+## MCP Server
+
+Mount a [Model Context Protocol](https://modelcontextprotocol.io/) server on any path. `MCP.Router(config)` returns a `ProtectedRouter` that hosts the Streamable HTTP transport, with one `McpServer` instance per client session keyed by the `mcp-session-id` header.
+
+```typescript
+import WebServer, { MCP, zod } from '@gibme/webserver';
+
+const app = WebServer();
+
+app.use('/mcp', MCP.Router({
+    implementation: { name: 'my-server', version: '1.0.0' },
+    tools: [{
+        name: 'add',
+        title: 'Add',
+        description: 'Adds two numbers',
+        inputSchema: { a: zod.number(), b: zod.number() },
+        outputSchema: { sum: zod.number() },
+        callback: async ({ a, b }) => ({
+            structuredContent: { sum: a + b },
+            content: [{ type: 'text', text: String(a + b) }]
+        })
+    }],
+    resources: [{
+        name: 'app-config',
+        uri: 'config://app',
+        metadata: { title: 'App Config', mimeType: 'application/json' },
+        readCallback: async (uri) => ({
+            contents: [{ uri: uri.href, text: JSON.stringify({ env: 'prod' }) }]
+        })
+    }, {
+        kind: 'template',
+        name: 'user-profile',
+        template: new MCP.ResourceTemplate('users://{userId}/profile', { list: undefined }),
+        readCallback: async (uri, variables) => ({
+            contents: [{ uri: uri.href, text: JSON.stringify({ userId: variables.userId }) }]
+        })
+    }],
+    prompts: [{
+        name: 'greet',
+        title: 'Greet',
+        description: 'Greets a person by name',
+        argsSchema: { name: zod.string() },
+        callback: async ({ name }) => ({
+            messages: [{ role: 'user', content: { type: 'text', text: `Hello, ${name}!` } }]
+        })
+    }]
+}));
+```
+
+Tool, resource, and prompt schemas use raw Zod shapes. The `inputSchema`/`outputSchema`/`argsSchema` types flow into each `callback`, so the compiler catches argument and return-value mismatches at the call site.
+
+`MCP.Router` also accepts a `() => McpServer` factory for cases where the per-session server needs state captured in a closure (DB connections, session-scoped caches):
+
+```typescript
+app.use('/mcp', MCP.Router(() => {
+    const sessionState = openSessionState();
+    return MCP.create_server({
+        implementation: { name: 'my-server', version: '1.0.0' },
+        tools: [{ /* tools that close over sessionState */ }]
+    });
+}));
+```
+
+Because `MCP.Router` returns a `ProtectedRouter`, calling `setAuthenticationProvider` on it gates every MCP request:
+
+```typescript
+const mcp = MCP.Router({ /* ... */ });
+mcp.setAuthenticationProvider(async (request) =>
+    request.authorization?.bearer?.token === process.env.MCP_TOKEN);
+app.use('/mcp', mcp);
+```
 
 ## WebSocket Routes
 
@@ -266,8 +339,16 @@ Both file paths (strings) and Buffers are accepted.
 ## Exports
 
 ```typescript
-import WebServer, { Logger, Router, multer } from '@gibme/webserver';
-import type { Request, Response } from '@gibme/webserver';
+import WebServer, {
+    Logger,
+    Router,
+    ProtectedRouter,
+    multer,
+    zod,
+    MCP,
+    Proxy
+} from '@gibme/webserver';
+import type { Request, Response, AuthenticationProvider } from '@gibme/webserver';
 ```
 
 ## Documentation

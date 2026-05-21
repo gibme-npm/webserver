@@ -18,11 +18,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import {
+    McpServer,
+    ResourceTemplate as McpResourceTemplate,
+    ResourceMetadata as McpResourceMetadata,
+    ReadResourceCallback as McpReadResourceCallback,
+    ReadResourceTemplateCallback as McpReadResourceTemplateCallback
+} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {
     Implementation as McpServerImplementation,
     ToolAnnotations,
     CallToolResult,
+    GetPromptResult,
     ServerRequest,
     ServerNotification
 } from '@modelcontextprotocol/sdk/types.js';
@@ -30,7 +37,15 @@ import { ServerOptions as McpServerOptions } from '@modelcontextprotocol/sdk/ser
 import { ZodRawShapeCompat, ShapeOutput } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js';
 
-export { McpServer, McpServerOptions, McpServerImplementation };
+export {
+    McpServer,
+    McpServerOptions,
+    McpServerImplementation,
+    McpResourceTemplate,
+    McpResourceMetadata,
+    McpReadResourceCallback,
+    McpReadResourceTemplateCallback
+};
 
 /**
  * The tool result shape returned from an `McpToolCallback`. Narrows `structuredContent` from
@@ -59,7 +74,6 @@ export type McpToolCallback<
 /**
  * Descriptor for a single MCP tool registered on an `McpServer`. Bundles the tool's metadata,
  * its input and output schemas (as raw Zod shapes), and the callback that handles invocations.
- * Pass an array of these to `create_mcp_server` to register them all in one shot.
  */
 export type McpTool<ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
     ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat> = {
@@ -96,23 +110,142 @@ export type McpTool<ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
 }
 
 /**
- * Creates a new `McpServer` instance and registers the supplied tools on it. Each tool's
- * `inputSchema` and `outputSchema` are forwarded to the SDK so requests and responses are
- * validated at runtime, and the callback signature is type-checked against both schemas
- * at compile time.
- *
- * @param implementation
- * @param serverOptions
- * @param tools
+ * Descriptor for a single MCP resource registered on an `McpServer`. Resources expose
+ * read-only, URI-addressable content to clients. Two flavors are supported via the `kind`
+ * discriminator: a `static` resource bound to one fixed URI, or a `template` resource whose
+ * URI follows a pattern (`users://{userId}`) with optional listing and completion callbacks.
+ * `kind` defaults to `static` so the common case stays terse.
  */
-export function create_mcp_server (
-    implementation: McpServerImplementation,
-    serverOptions?: McpServerOptions,
-    tools: McpTool[] = []
-): McpServer {
-    const server = new McpServer(implementation, serverOptions);
+export type McpResource =
+    | {
+        /**
+         * Static resource bound to a single URI. Default when `kind` is omitted.
+         */
+        kind?: 'static';
+        /**
+         * Stable identifier used to register the resource.
+         */
+        name: string;
+        /**
+         * Concrete URI the client reads to fetch this resource.
+         */
+        uri: string;
+        /**
+         * Optional metadata surfaced to clients in resource listings (title, description,
+         * mimeType, etc.).
+         */
+        metadata?: McpResourceMetadata;
+        /**
+         * Handler invoked when a client reads the resource at the bound URI.
+         */
+        readCallback: McpReadResourceCallback;
+    }
+    | {
+        /**
+         * Marks this descriptor as a template-based resource. Required to disambiguate from
+         * the default `static` variant.
+         */
+        kind: 'template';
+        /**
+         * Stable identifier used to register the resource template.
+         */
+        name: string;
+        /**
+         * URI template (e.g. `users://{userId}`) along with optional `list` and `complete`
+         * callbacks. Use `new ResourceTemplate(...)` from the SDK (re-exported here and on
+         * the `MCP` namespace).
+         */
+        template: McpResourceTemplate;
+        /**
+         * Optional metadata surfaced to clients in resource listings.
+         */
+        metadata?: McpResourceMetadata;
+        /**
+         * Handler invoked when a client reads a concrete URI matching the template. Receives
+         * the parsed variable bag from the URI template.
+         */
+        readCallback: McpReadResourceTemplateCallback;
+    };
 
-    for (const tool of tools) {
+/**
+ * The handler signature for a prompt registered via `McpPrompt`. `args` is typed from the
+ * prompt's `argsSchema` so the compiler catches argument mismatches at the call site.
+ */
+export type McpPromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> = (
+    args: ShapeOutput<PromptArgsType>,
+    extra: RequestHandlerExtra<ServerRequest, ServerNotification>
+) => GetPromptResult | Promise<GetPromptResult>;
+
+/**
+ * Descriptor for a single MCP prompt registered on an `McpServer`. Prompts are user-invoked
+ * templates (typically surfaced as slash-commands or a prompt picker in the client) that
+ * render into a message list when called with the user's arguments.
+ */
+export type McpPrompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> = {
+    /**
+     * The unique prompt name used by clients to invoke this prompt.
+     */
+    name: string;
+    /**
+     * Human-readable title surfaced to clients in prompt listings.
+     */
+    title: string;
+    /**
+     * Human-readable description of what the prompt does, surfaced to clients in prompt
+     * listings.
+     */
+    description: string;
+    /**
+     * Raw Zod shape describing the named arguments the prompt accepts. Drives the type of
+     * `args` passed to `callback`.
+     */
+    argsSchema?: PromptArgsType;
+    /**
+     * The handler invoked when a client requests this prompt.
+     */
+    callback: McpPromptCallback<PromptArgsType>;
+}
+
+/**
+ * Configuration accepted by `create_mcp_server`. `implementation` is required; everything
+ * else is optional. Each primitive array (`tools`, `resources`, `prompts`) is registered on
+ * the returned `McpServer` in declaration order.
+ */
+export type McpServerConfig = {
+    /**
+     * Server identity (name, version) surfaced to clients during initialization.
+     */
+    implementation: McpServerImplementation;
+    /**
+     * Underlying SDK `ServerOptions` (capabilities, instructions, etc.).
+     */
+    options?: McpServerOptions;
+    /**
+     * Tools to register on the server. See `McpTool`.
+     */
+    tools?: McpTool[];
+    /**
+     * Resources to register on the server. Each entry may be a static URI or a
+     * `ResourceTemplate`. See `McpResource`.
+     */
+    resources?: McpResource[];
+    /**
+     * Prompts to register on the server. See `McpPrompt`.
+     */
+    prompts?: McpPrompt[];
+}
+
+/**
+ * Creates a new `McpServer` instance and registers the supplied primitives on it. Tool,
+ * resource, and prompt schemas are forwarded to the SDK so requests are validated at runtime,
+ * and each callback signature is type-checked against its declared schema at compile time.
+ *
+ * @param config Server identity, SDK options, and the primitive arrays to register.
+ */
+export function create_mcp_server (config: McpServerConfig): McpServer {
+    const server = new McpServer(config.implementation, config.options);
+
+    for (const tool of config.tools ?? []) {
         server.registerTool<ZodRawShapeCompat, ZodRawShapeCompat>(tool.name, {
             title: tool.title,
             description: tool.description,
@@ -120,6 +253,32 @@ export function create_mcp_server (
             outputSchema: tool.outputSchema,
             annotations: tool.annotations
         }, tool.callback);
+    }
+
+    for (const resource of config.resources ?? []) {
+        if (resource.kind === 'template') {
+            server.registerResource(
+                resource.name,
+                resource.template,
+                resource.metadata ?? {},
+                resource.readCallback
+            );
+        } else {
+            server.registerResource(
+                resource.name,
+                resource.uri,
+                resource.metadata ?? {},
+                resource.readCallback
+            );
+        }
+    }
+
+    for (const prompt of config.prompts ?? []) {
+        server.registerPrompt<ZodRawShapeCompat>(prompt.name, {
+            title: prompt.title,
+            description: prompt.description,
+            argsSchema: prompt.argsSchema
+        }, prompt.callback);
     }
 
     return server;

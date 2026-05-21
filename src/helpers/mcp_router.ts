@@ -23,6 +23,7 @@ import { ProtectedRouter } from './protected_router';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
+import { create_mcp_server, McpServerConfig } from './mcp_server';
 import Logger from '@gibme/logger';
 import { v4 as uuid } from 'uuid';
 
@@ -59,19 +60,33 @@ const safe_dispatch = async (
 
 /**
  * Creates a mountable Router that hosts an MCP server over the Streamable HTTP transport.
- * Each client session gets its own `McpServer` instance (constructed via `create_server`)
- * and its own transport, keyed by the `mcp-session-id` header. POST without a session ID
- * initializes a new session; POST with a known session ID dispatches to the existing
- * transport; GET streams server-to-client notifications for an existing session; DELETE
- * terminates a session.
+ * Each client session gets its own `McpServer` instance and its own transport, keyed by the
+ * `mcp-session-id` header. POST without a session ID initializes a new session; POST with a
+ * known session ID dispatches to the existing transport; GET streams server-to-client
+ * notifications for an existing session; DELETE terminates a session.
  *
  * The returned router is a `ProtectedRouter`, so callers can install an
  * `AuthenticationProvider` to gate every MCP request.
  *
- * @param create_server Factory invoked once per new client session to build the `McpServer`
- *                      that will own the session's tools, resources, and prompts.
+ * Two ways to specify the per-session server:
+ * - Pass a `() => McpServer` factory when the server needs per-session state captured in a
+ *   closure (DB connections, session-scoped caches, etc.).
+ * - Pass an `McpServerConfig` bundle (the same shape `create_mcp_server` accepts) when the
+ *   server is fully described by its declarative primitive list.
+ *
+ * @param create_server Factory invoked once per new client session to build the `McpServer`.
  */
-export function McpRouter (create_server: () => McpServer): McpRouter {
+export function McpRouter (create_server: () => McpServer): McpRouter;
+/**
+ * @param config Declarative `McpServerConfig` bundle. A fresh `McpServer` is built per
+ *               session by passing this config to `create_mcp_server`.
+ */
+export function McpRouter (config: McpServerConfig): McpRouter;
+export function McpRouter (source: (() => McpServer) | McpServerConfig): McpRouter {
+    const create_server: () => McpServer = typeof source === 'function'
+        ? source
+        : () => create_mcp_server(source);
+
     const router = ProtectedRouter();
 
     const transports = new Map<string, StreamableHTTPServerTransport>();

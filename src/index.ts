@@ -53,9 +53,17 @@ import {
     McpServer,
     McpServerOptions,
     McpServerImplementation,
+    McpServerConfig,
     McpTool,
     McpToolCallback,
-    McpToolResult
+    McpToolResult,
+    McpResource,
+    McpResourceTemplate,
+    McpResourceMetadata,
+    McpReadResourceCallback,
+    McpReadResourceTemplateCallback,
+    McpPrompt,
+    McpPromptCallback
 } from './helpers/mcp_server';
 import { McpRouter } from './helpers/mcp_router';
 import type { ToolAnnotations as McpToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
@@ -86,8 +94,11 @@ export namespace MCP {
     export const Server = McpServer;
     export const Router = McpRouter;
     export type Router = McpRouter;
+    export const ResourceTemplate = McpResourceTemplate;
+    export type ResourceTemplate = McpResourceTemplate;
     export type ServerOptions = McpServerOptions;
     export type ServerImplementation = McpServerImplementation;
+    export type ServerConfig = McpServerConfig;
     export type Tool<
         ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
         ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
@@ -99,6 +110,15 @@ export namespace MCP {
     export type ToolResult<ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat> =
         McpToolResult<ToolOutputType>;
     export type ToolAnnotations = McpToolAnnotations;
+    export type Resource = McpResource;
+    export type ResourceMetadata = McpResourceMetadata;
+    export type ResourceCallback = McpReadResourceCallback;
+    export type TemplatedResourceCallback = McpReadResourceTemplateCallback;
+    export type Prompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
+        McpPrompt<PromptArgsType>;
+    export type PromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
+        McpPromptCallback<PromptArgsType>;
+    export type PromptArgsShape = ZodRawShapeCompat;
 }
 export type { AuthenticationProvider } from './middleware';
 
