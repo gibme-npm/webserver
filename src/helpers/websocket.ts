@@ -102,13 +102,15 @@ const write_auth_denied_response = (
         body
     ];
 
+    // socket.end() sends FIN; write()+destroy() sends RST after flush. Since `ws`
+    // has already handed the socket to the client via 'unexpected-response', an RST
+    // surfaces as ECONNRESET on ClientRequest -> uncaught + node:test post-end failure.
     try {
-        socket.write(lines.join('\r\n'));
+        socket.end(lines.join('\r\n'));
     } catch (error) {
         invoke_error_sink(errorSink, error, 'websocket-write');
+        socket.destroy();
     }
-
-    socket.destroy();
 };
 
 /** @ignore */
