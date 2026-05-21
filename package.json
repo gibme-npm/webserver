@@ -1,6 +1,6 @@
 {
   "name": "@gibme/webserver",
-  "version": "22.2.0",
+  "version": "22.2.1",
   "description": "A simple express.js webserver wrapper with extra magic built in",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,7 +38,7 @@
     "email": "brandonlehmann@gmail.com"
   },
   "dependencies": {
-    "@gibme/fetch": "^22.0.1",
+    "@gibme/fetch": "^22.1.0",
     "@gibme/logger": "^22.0.1",
     "@gibme/perf-monitor": "^22.0.0",
     "@gibme/timer": "^22.0.0",

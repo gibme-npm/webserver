@@ -110,6 +110,22 @@ export type McpTool<ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
 }
 
 /**
+ * Identity helper that locks in `inputSchema` / `outputSchema` inference for an inline tool
+ * descriptor. Use when writing tools as array elements of `tools: McpTool[]`, where the array
+ * element type otherwise falls back to the default `ZodRawShapeCompat` generics and widens the
+ * `callback` return type. Wrapping the descriptor with `define_mcp_tool({...})` causes TS to
+ * solve `ToolInputType` and `ToolOutputType` from the literal `inputSchema` / `outputSchema`
+ * before checking the callback body, so contextual typing flows precisely into the return
+ * expression and `content: [{ type: 'text', ... }]` keeps its discriminator.
+ */
+export function define_mcp_tool<
+    ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
+    ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tool: McpTool<ToolInputType, ToolOutputType>): McpTool<ToolInputType, ToolOutputType> {
+    return tool;
+}
+
+/**
  * Descriptor for a single MCP resource registered on an `McpServer`. Resources expose
  * read-only, URI-addressable content to clients. Two flavors are supported via the `kind`
  * discriminator: a `static` resource bound to one fixed URI, or a `template` resource whose
@@ -204,6 +220,20 @@ export type McpPrompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeComp
      * The handler invoked when a client requests this prompt.
      */
     callback: McpPromptCallback<PromptArgsType>;
+}
+
+/**
+ * Identity helper that locks in `argsSchema` inference for an inline prompt descriptor. Use
+ * when writing prompts as array elements of `prompts: McpPrompt[]`, where the array element
+ * type otherwise falls back to the default `ZodRawShapeCompat` generic and widens the `args`
+ * parameter passed to `callback`. Wrapping with `define_mcp_prompt({...})` causes TS to solve
+ * `PromptArgsType` from the literal `argsSchema` before checking the callback body, so `args`
+ * is typed precisely against the declared shape.
+ */
+export function define_mcp_prompt<
+    PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat
+> (prompt: McpPrompt<PromptArgsType>): McpPrompt<PromptArgsType> {
+    return prompt;
 }
 
 /**

@@ -33,6 +33,8 @@ import {
 } from 'http-proxy-middleware';
 import {
     create_mcp_server,
+    define_mcp_tool,
+    define_mcp_prompt,
     McpServer,
     McpServerOptions,
     McpServerImplementation,
@@ -86,6 +88,7 @@ export namespace MCP {
     export type ServerOptions = McpServerOptions;
     export type ServerImplementation = McpServerImplementation;
     export type ServerConfig = McpServerConfig;
+    export const Tool = define_mcp_tool;
     export type Tool<
         ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
         ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
@@ -101,6 +104,7 @@ export namespace MCP {
     export type ResourceMetadata = McpResourceMetadata;
     export type ResourceCallback = McpReadResourceCallback;
     export type TemplatedResourceCallback = McpReadResourceTemplateCallback;
+    export const Prompt = define_mcp_prompt;
     export type Prompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
         McpPrompt<PromptArgsType>;
     export type PromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =

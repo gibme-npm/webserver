@@ -225,7 +225,7 @@
     "@shikijs/types" "^3.23.0"
     "@shikijs/vscode-textmate" "^10.0.2"
 
-"@gibme/fetch@^22.0.1":
+"@gibme/fetch@^22.1.0":
   version "22.1.0"
   resolved "https://registry.yarnpkg.com/@gibme/fetch/-/fetch-22.1.0.tgz#4c7643201ffed81ee933e1f3f2834b5f671f49db"
   integrity sha512-vsjX8ZON7v9g+i0A7bMuHwHDRoRm/atK+ldzEYZ+HGAoH+GuEWFKKM22Bbc4xHYJNrGyD6Aaj31lepk6+MCBwQ==
