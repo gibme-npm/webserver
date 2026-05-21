@@ -839,22 +839,62 @@ describe('CORS', async () => {
         assert.strictEqual(response.headers.get('access-control-max-age'), '600');
     });
 
-    it('credentials mode does NOT emit "*" for origin', async () => {
-        const app2 = WebServer.create({
-            port: 12363,
-            corsOrigin: { origin: '*', credentials: true }
-        });
-        app2.get('/c2', (_req, res) => res.json({ ok: true }));
-        await app2.start();
-        try {
-            const response = await fetch.get(`${app2.url}/c2`, {
-                headers: { origin: 'https://example.test' }
-            });
-            assert.strictEqual(response.headers.get('access-control-allow-origin'), 'https://example.test');
-        } finally {
-            await app2.stop();
-        }
+    it('throws at construction when origin is "*" and credentials is true', () => {
+        assert.throws(
+            () => WebServer.create({
+                port: 12363,
+                corsOrigin: { origin: '*', credentials: true }
+            }),
+            /cannot be used with credentials/
+        );
     });
+
+    const assertOriginPolicy = async (
+        port: number,
+        route: string,
+        origin: string[] | RegExp,
+        allowedOrigin: string,
+        deniedOrigin: string
+    ) => {
+        const app = WebServer.create({
+            port,
+            corsOrigin: { origin, credentials: true }
+        });
+        app.get(route, (_req, res) => res.json({ ok: true }));
+        await app.start();
+        try {
+            const ok = await fetch.get(`${app.url}${route}`, {
+                headers: { origin: allowedOrigin }
+            });
+            assert.strictEqual(ok.headers.get('access-control-allow-origin'), allowedOrigin);
+            const denied = await fetch.get(`${app.url}${route}`, {
+                headers: { origin: deniedOrigin }
+            });
+            assert.strictEqual(denied.headers.get('access-control-allow-origin'), null);
+        } finally {
+            await app.stop();
+        }
+    };
+
+    it('reflects an allowed origin from a string[] allowlist and denies others', () =>
+        assertOriginPolicy(
+            12372,
+            '/c3',
+            ['https://a.example', 'https://b.example'],
+            'https://b.example',
+            'https://evil.example'
+        )
+    );
+
+    it('regex origin requires a whole-string match', () =>
+        assertOriginPolicy(
+            12373,
+            '/c4',
+            /^https:\/\/[a-z]+\.example$/,
+            'https://team.example',
+            'https://team.example.evil'
+        )
+    );
 });
 
 describe('Proxy', async () => {

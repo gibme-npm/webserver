@@ -41,8 +41,7 @@ const DEFAULT_METHODS = ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'];
 
 const resolve_origin = (
     origin: CorsOrigin | undefined,
-    request: express.Request,
-    credentials: boolean
+    request: express.Request
 ): string | undefined => {
     if (origin === undefined || origin === null || origin === '') {
         return undefined;
@@ -51,21 +50,20 @@ const resolve_origin = (
     const requestOrigin = request.header('origin');
 
     if (typeof origin === 'string') {
-        if (origin === '*') {
-            return credentials
-                ? (requestOrigin || undefined)
-                : '*';
-        }
-
         return origin;
     }
 
     if (Array.isArray(origin)) {
-        return requestOrigin && origin.includes(requestOrigin) ? requestOrigin : undefined;
+        return requestOrigin ? origin.find(allowed => allowed === requestOrigin) : undefined;
     }
 
     if (origin instanceof RegExp) {
-        return requestOrigin && origin.test(requestOrigin) ? requestOrigin : undefined;
+        if (!requestOrigin) {
+            return undefined;
+        }
+
+        const match = origin.exec(requestOrigin);
+        return match && match[0] === requestOrigin ? match[0] : undefined;
     }
 
     if (typeof origin === 'function') {
@@ -98,12 +96,33 @@ export default function middleware (corsOrigin: string | CorsOptions) {
         ? { origin: corsOrigin.trim() || undefined }
         : { ...corsOrigin };
 
+    if (typeof options.origin === 'string') {
+        options.origin = options.origin.trim() || undefined;
+    }
+
+    if (options.origin === '*' && options.credentials) {
+        throw new Error(
+            'CORS: origin "*" cannot be used with credentials=true. ' +
+            'The CORS specification forbids the wildcard origin for credentialed requests. ' +
+            'Supply an explicit origin (string, string[], RegExp, or function) instead.'
+        );
+    }
+
+    if (options.origin instanceof RegExp) {
+        // Pre-anchor for whole-string match and strip stateful/multiline flags.
+        // Strips g/y (stateful exec via lastIndex would produce non-deterministic
+        // allow decisions across requests on a shared RegExp) and m (single-line
+        // anchor semantics; HTTP Origin headers cannot contain newlines).
+        const flags = options.origin.flags.replace(/[gym]/g, '');
+        options.origin = new RegExp(`^(?:${options.origin.source})$`, flags);
+    }
+
     return (request: express.Request, response: express.Response, next: express.NextFunction) => {
         if (options.origin === undefined || options.origin === '') {
             return next();
         }
 
-        const resolvedOrigin = resolve_origin(options.origin, request, !!options.credentials);
+        const resolvedOrigin = resolve_origin(options.origin, request);
 
         if (resolvedOrigin) {
             response.header('Access-Control-Allow-Origin', resolvedOrigin);

@@ -354,7 +354,7 @@ const app = WebServer({
 });
 ```
 
-Preflight `OPTIONS` requests are answered directly with `204 No Content` and the negotiated headers (set `preflightContinue: true` to forward them to the route handler). When `credentials: true`, the wildcard origin `*` is reflected to the request's actual `Origin` header instead of being emitted literally.
+Preflight `OPTIONS` requests are answered directly with `204 No Content` and the negotiated headers (set `preflightContinue: true` to forward them to the route handler). The wildcard origin `*` cannot be combined with `credentials: true`; the CORS specification forbids that pairing, and constructing the middleware with both will throw. To allow credentialed cross-origin requests, supply an explicit origin via string, string array, RegExp, or function. Regex origins must match the entire `Origin` value; partial matches are rejected.
 
 ## Content Security Policy
 
