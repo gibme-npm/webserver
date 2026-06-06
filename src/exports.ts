@@ -34,13 +34,18 @@ import {
 import {
     create_mcp_server,
     define_mcp_tool,
+    define_mcp_tools,
     define_mcp_prompt,
+    define_mcp_prompts,
     McpServer,
     McpServerOptions,
     McpServerImplementation,
     McpServerConfig,
+    McpServerConfigFor,
+    McpEmptyShape,
     McpTool,
     McpToolCallback,
+    McpToolList,
     McpToolResult,
     McpResource,
     McpResourceTemplate,
@@ -48,7 +53,8 @@ import {
     McpReadResourceCallback,
     McpReadResourceTemplateCallback,
     McpPrompt,
-    McpPromptCallback
+    McpPromptCallback,
+    McpPromptList
 } from './helpers/mcp_server';
 import { McpRouter, McpSessionOptions } from './helpers/mcp_router';
 import type { ToolAnnotations as McpToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
@@ -88,7 +94,15 @@ export namespace MCP {
     export type ServerOptions = McpServerOptions;
     export type ServerImplementation = McpServerImplementation;
     export type ServerConfig = McpServerConfig;
+    export type ServerConfigFor<
+        Tools extends readonly McpTool<any, any>[] = McpTool[],
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > = McpServerConfigFor<Tools, PromptArgs>;
+    export type EmptyShape = McpEmptyShape;
     export const Tool = define_mcp_tool;
+    export const Tools = define_mcp_tools;
+    export type ToolList<Inputs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]> =
+        McpToolList<Inputs>;
     export type Tool<
         ToolInputType extends ZodRawShapeCompat = ZodRawShapeCompat,
         ToolOutputType extends ZodRawShapeCompat = ZodRawShapeCompat
@@ -105,10 +119,13 @@ export namespace MCP {
     export type ResourceCallback = McpReadResourceCallback;
     export type TemplatedResourceCallback = McpReadResourceTemplateCallback;
     export const Prompt = define_mcp_prompt;
+    export const Prompts = define_mcp_prompts;
     export type Prompt<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
         McpPrompt<PromptArgsType>;
     export type PromptCallback<PromptArgsType extends ZodRawShapeCompat = ZodRawShapeCompat> =
         McpPromptCallback<PromptArgsType>;
+    export type PromptList<PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]> =
+        McpPromptList<PromptArgs>;
     export type PromptArgsShape = ZodRawShapeCompat;
     export type SessionOptions = McpSessionOptions;
 }

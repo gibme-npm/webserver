@@ -237,11 +237,51 @@ export function define_mcp_prompt<
 }
 
 /**
- * Configuration accepted by `create_mcp_server`. `implementation` is required; everything
- * else is optional. Each primitive array (`tools`, `resources`, `prompts`) is registered on
- * the returned `McpServer` in declaration order.
+ * The empty raw shape. Used as the inferred default for a tool or prompt that does not declare
+ * an input/args schema, so its callback receives an empty `args` object instead of an untyped
+ * `Record<string, any>` bag.
  */
-export type McpServerConfig = {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type McpEmptyShape = {};
+
+/**
+ * A tool list whose element input schemas are inferred per element via a reverse-mapped tuple.
+ * This is the fallback signature shape for `create_mcp_server` / `McpRouter` / `define_mcp_tools`
+ * when the tools array exceeds the fixed-arity overloads: callback `args` stay precisely typed
+ * (as long as every element declares an `inputSchema`), but `structuredContent` is not checked
+ * against `outputSchema` at this level (the SDK still validates it at runtime).
+ *
+ * Note: if any element omits `inputSchema`, TypeScript cannot invert the mapped type and the
+ * whole list falls back to loosely typed callbacks. Declare `inputSchema: {}` on no-argument
+ * tools to keep inference intact.
+ */
+export type McpToolList<Inputs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]> = {
+    [K in keyof Inputs]: McpTool<Inputs[K], ZodRawShapeCompat>;
+};
+
+/**
+ * A prompt list whose element args schemas are inferred per element via a reverse-mapped tuple.
+ * Same inversion caveat as `McpToolList`: declare `argsSchema: {}` on no-argument prompts to
+ * keep inference intact for the whole list.
+ */
+export type McpPromptList<PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]> = {
+    [K in keyof PromptArgs]: McpPrompt<PromptArgs[K]>;
+};
+
+/**
+ * Configuration accepted by `create_mcp_server` and the config form of `McpRouter`.
+ * `implementation` is required; everything else is optional. Each primitive array
+ * (`tools`, `resources`, `prompts`) is registered on the returned `McpServer` in
+ * declaration order.
+ *
+ * The `Tools` and `PromptArgs` parameters exist so the fixed-arity overloads of
+ * `create_mcp_server` / `McpRouter` can type each tool and prompt element individually;
+ * consumers annotating a config variable can use the bare `McpServerConfig` alias.
+ */
+export type McpServerConfigFor<
+    Tools extends readonly McpTool<any, any>[] = McpTool[],
+    PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+> = {
     /**
      * Server identity (name, version) surfaced to clients during initialization.
      */
@@ -253,7 +293,7 @@ export type McpServerConfig = {
     /**
      * Tools to register on the server. See `McpTool`.
      */
-    tools?: McpTool[];
+    tools?: Tools;
     /**
      * Resources to register on the server. Each entry may be a static URI or a
      * `ResourceTemplate`. See `McpResource`.
@@ -262,17 +302,194 @@ export type McpServerConfig = {
     /**
      * Prompts to register on the server. See `McpPrompt`.
      */
-    prompts?: McpPrompt[];
+    prompts?: McpPromptList<PromptArgs>;
+}
+
+/**
+ * Backwards-compatible, non-generic config shape. Equivalent to
+ * `McpServerConfigFor<McpTool[], ZodRawShapeCompat[]>`.
+ */
+export type McpServerConfig = McpServerConfigFor;
+
+/**
+ * The call-signature ladder shared by every config-form MCP factory: `create_mcp_server` and
+ * the config form of `McpRouter`. Declared once so the two factories cannot drift.
+ *
+ * Fixed-arity signatures (up to 12 tools) infer each tool's `inputSchema`/`outputSchema`
+ * independently, so inline tool literals get precisely typed callback `args` and a checked
+ * `structuredContent` return. The final signature is the fallback for tools arrays beyond
+ * twelve entries (or non-tuple arrays): `args` stay inferred per element while
+ * `structuredContent` is left to the SDK's runtime validation; see `McpToolList`. Prompt
+ * `argsSchema` types flow into prompt callbacks in every signature.
+ */
+export interface McpConfigFactory<FactoryResult, ExtraArgs extends readonly unknown[] = []> {
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+        McpTool<I9, O9>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+        McpTool<I9, O9>, McpTool<I10, O10>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I11 extends ZodRawShapeCompat = McpEmptyShape, O11 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+        McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I11 extends ZodRawShapeCompat = McpEmptyShape, O11 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        I12 extends ZodRawShapeCompat = McpEmptyShape, O12 extends ZodRawShapeCompat = ZodRawShapeCompat,
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<readonly [
+        McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+        McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+        McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>, McpTool<I12, O12>
+    ], PromptArgs>, ...extra: ExtraArgs): FactoryResult;
+    <
+        Inputs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[],
+        PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+    > (config: McpServerConfigFor<McpToolList<Inputs>, PromptArgs>, ...extra: ExtraArgs): FactoryResult;
 }
 
 /**
  * Creates a new `McpServer` instance and registers the supplied primitives on it. Tool,
  * resource, and prompt schemas are forwarded to the SDK so requests are validated at runtime,
  * and each callback signature is type-checked against its declared schema at compile time.
+ * See `McpConfigFactory` for how the `tools` / `prompts` schema types flow into callbacks.
  *
  * @param config Server identity, SDK options, and the primitive arrays to register.
  */
-export function create_mcp_server (config: McpServerConfig): McpServer {
+export const create_mcp_server: McpConfigFactory<McpServer> = function (
+    config: McpServerConfigFor<readonly McpTool<any, any>[], readonly ZodRawShapeCompat[]>
+): McpServer {
     const server = new McpServer(config.implementation, config.options);
 
     for (const tool of config.tools ?? []) {
@@ -312,4 +529,378 @@ export function create_mcp_server (config: McpServerConfig): McpServer {
     }
 
     return server;
+};
+
+/**
+ * Identity helper that locks in per-element `inputSchema` / `outputSchema` inference for a
+ * whole tools array defined outside a `create_mcp_server` / `McpRouter` call. One wrapper
+ * around the array replaces wrapping every element with `define_mcp_tool`. Do NOT annotate
+ * the result (or the array) as `McpTool[]`; the annotation widens every element back to the
+ * default generics and erases the inference this helper provides.
+ *
+ * Fixed-arity overloads cover up to twelve tools with full input and output typing; larger
+ * arrays fall back to per-element `args` inference only, with `structuredContent` left to the
+ * SDK's runtime validation (see `McpToolList`).
+ */
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>
+]): readonly [
+    McpTool<I1, O1>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I11 extends ZodRawShapeCompat = McpEmptyShape, O11 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>
+];
+export function define_mcp_tools<
+    I1 extends ZodRawShapeCompat = McpEmptyShape, O1 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I2 extends ZodRawShapeCompat = McpEmptyShape, O2 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I3 extends ZodRawShapeCompat = McpEmptyShape, O3 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I4 extends ZodRawShapeCompat = McpEmptyShape, O4 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I5 extends ZodRawShapeCompat = McpEmptyShape, O5 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I6 extends ZodRawShapeCompat = McpEmptyShape, O6 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I7 extends ZodRawShapeCompat = McpEmptyShape, O7 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I8 extends ZodRawShapeCompat = McpEmptyShape, O8 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I9 extends ZodRawShapeCompat = McpEmptyShape, O9 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I10 extends ZodRawShapeCompat = McpEmptyShape, O10 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I11 extends ZodRawShapeCompat = McpEmptyShape, O11 extends ZodRawShapeCompat = ZodRawShapeCompat,
+    I12 extends ZodRawShapeCompat = McpEmptyShape, O12 extends ZodRawShapeCompat = ZodRawShapeCompat
+> (tools: readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>, McpTool<I12, O12>
+]): readonly [
+    McpTool<I1, O1>, McpTool<I2, O2>, McpTool<I3, O3>, McpTool<I4, O4>,
+    McpTool<I5, O5>, McpTool<I6, O6>, McpTool<I7, O7>, McpTool<I8, O8>,
+    McpTool<I9, O9>, McpTool<I10, O10>, McpTool<I11, O11>, McpTool<I12, O12>
+];
+/**
+ * Fallback signature for tools arrays beyond twelve entries; see `McpToolList`.
+ */
+export function define_mcp_tools<
+    Inputs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+> (tools: McpToolList<Inputs>): McpToolList<Inputs>;
+export function define_mcp_tools (tools: readonly McpTool<any, any>[]): any {
+    return tools;
+}
+
+/**
+ * Identity helper that locks in per-element `argsSchema` inference for a whole prompts array
+ * defined outside a `create_mcp_server` / `McpRouter` call. One wrapper around the array
+ * replaces wrapping every element with `define_mcp_prompt`. Do NOT annotate the result (or
+ * the array) as `McpPrompt[]`; the annotation widens every element back to the default
+ * generic and erases the inference this helper provides.
+ */
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>
+]): readonly [
+    McpPrompt<A1>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape,
+    A8 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape,
+    A8 extends ZodRawShapeCompat = McpEmptyShape,
+    A9 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape,
+    A8 extends ZodRawShapeCompat = McpEmptyShape,
+    A9 extends ZodRawShapeCompat = McpEmptyShape,
+    A10 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape,
+    A8 extends ZodRawShapeCompat = McpEmptyShape,
+    A9 extends ZodRawShapeCompat = McpEmptyShape,
+    A10 extends ZodRawShapeCompat = McpEmptyShape,
+    A11 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>, McpPrompt<A11>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>, McpPrompt<A11>
+];
+export function define_mcp_prompts<
+    A1 extends ZodRawShapeCompat = McpEmptyShape,
+    A2 extends ZodRawShapeCompat = McpEmptyShape,
+    A3 extends ZodRawShapeCompat = McpEmptyShape,
+    A4 extends ZodRawShapeCompat = McpEmptyShape,
+    A5 extends ZodRawShapeCompat = McpEmptyShape,
+    A6 extends ZodRawShapeCompat = McpEmptyShape,
+    A7 extends ZodRawShapeCompat = McpEmptyShape,
+    A8 extends ZodRawShapeCompat = McpEmptyShape,
+    A9 extends ZodRawShapeCompat = McpEmptyShape,
+    A10 extends ZodRawShapeCompat = McpEmptyShape,
+    A11 extends ZodRawShapeCompat = McpEmptyShape,
+    A12 extends ZodRawShapeCompat = McpEmptyShape
+> (prompts: readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>, McpPrompt<A11>, McpPrompt<A12>
+]): readonly [
+    McpPrompt<A1>, McpPrompt<A2>, McpPrompt<A3>, McpPrompt<A4>, McpPrompt<A5>, McpPrompt<A6>,
+    McpPrompt<A7>, McpPrompt<A8>, McpPrompt<A9>, McpPrompt<A10>, McpPrompt<A11>, McpPrompt<A12>
+];
+/**
+ * Fallback signature for prompts arrays beyond twelve entries; see `McpPromptList`.
+ */
+export function define_mcp_prompts<
+    PromptArgs extends readonly ZodRawShapeCompat[] = ZodRawShapeCompat[]
+> (prompts: McpPromptList<PromptArgs>): McpPromptList<PromptArgs>;
+export function define_mcp_prompts (prompts: readonly McpPrompt<any>[]): any {
+    return prompts;
 }

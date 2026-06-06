@@ -23,7 +23,13 @@ import { ProtectedRouter } from './protected_router';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
-import { create_mcp_server, McpServerConfig } from './mcp_server';
+import {
+    create_mcp_server,
+    McpConfigFactory,
+    McpServerConfigFor,
+    McpTool
+} from './mcp_server';
+import type { ZodRawShapeCompat } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import Logger from '@gibme/logger';
 import { v4 as uuid } from 'uuid';
 
@@ -109,20 +115,18 @@ const safe_dispatch = async (
  * - Pass a `() => McpServer` factory when the server needs per-session state captured in a
  *   closure (DB connections, session-scoped caches, etc.).
  * - Pass an `McpServerConfig` bundle (the same shape `create_mcp_server` accepts) when the
- *   server is fully described by its declarative primitive list.
- *
- * @param create_server Factory invoked once per new client session to build the `McpServer`.
- * @param sessionOptions Optional per-session lifecycle controls (idle timeout, max age, cap).
+ *   server is fully described by its declarative primitive list. The config call signatures
+ *   are shared with `create_mcp_server` via `McpConfigFactory`, so each tool's and prompt's
+ *   schema types flow into its callback identically in both factories.
  */
-export function McpRouter (create_server: () => McpServer, sessionOptions?: McpSessionOptions): McpRouter;
-/**
- * @param config Declarative `McpServerConfig` bundle. A fresh `McpServer` is built per
- *               session by passing this config to `create_mcp_server`.
- * @param sessionOptions Optional per-session lifecycle controls.
- */
-export function McpRouter (config: McpServerConfig, sessionOptions?: McpSessionOptions): McpRouter;
-export function McpRouter (
-    source: (() => McpServer) | McpServerConfig,
+export const McpRouter: {
+    /**
+     * @param create_server Factory invoked once per new client session to build the `McpServer`.
+     * @param sessionOptions Optional per-session lifecycle controls (idle timeout, max age, cap).
+     */
+    (create_server: () => McpServer, sessionOptions?: McpSessionOptions): McpRouter;
+} & McpConfigFactory<McpRouter, [sessionOptions?: McpSessionOptions]> = function (
+    source: (() => McpServer) | McpServerConfigFor<readonly McpTool<any, any>[], readonly ZodRawShapeCompat[]>,
     sessionOptions?: McpSessionOptions
 ): McpRouter {
     const create_server: () => McpServer = typeof source === 'function'
@@ -302,4 +306,4 @@ export function McpRouter (
     });
 
     return router;
-}
+};

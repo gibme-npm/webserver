@@ -197,7 +197,36 @@ app.use('/mcp', MCP.Router({
 }));
 ```
 
-Tool, resource, and prompt schemas use raw Zod shapes. The `inputSchema`/`outputSchema`/`argsSchema` types flow into each `callback`, so the compiler catches argument and return-value mismatches at the call site.
+Tool, resource, and prompt schemas use raw Zod shapes. The `inputSchema`/`outputSchema`/`argsSchema` types flow into each `callback` individually, so the compiler catches argument and return-value mismatches per tool at the call site. This applies to inline arrays of up to 12 tools; larger arrays keep per-element `args` typing while `structuredContent` is validated by the SDK at runtime.
+
+### Defining tools outside the call
+
+To define the arrays separately, wrap them with `MCP.Tools(...)` / `MCP.Prompts(...)` (or wrap individual entries with `MCP.Tool(...)` / `MCP.Prompt(...)`). Do **not** annotate the variable as `MCP.Tool[]`; an explicit annotation widens every element to the default generics and turns the callback arguments into `any`:
+
+```typescript
+// CORRECT: full per-element typing, no annotation needed
+const tools = MCP.Tools([{
+    name: 'add',
+    title: 'Add',
+    description: 'Adds two numbers',
+    inputSchema: { a: zod.number(), b: zod.number() },
+    outputSchema: { sum: zod.number() },
+    callback: async ({ a, b }) => ({          // a: number, b: number
+        structuredContent: { sum: a + b },    // checked against outputSchema
+        content: [{ type: 'text', text: String(a + b) }]
+    })
+}]);
+
+// WRONG: the annotation erases inference; callback args become `any`
+// const tools: MCP.Tool[] = [{ ... }];
+
+app.use('/mcp', MCP.Router({
+    implementation: { name: 'my-server', version: '1.0.0' },
+    tools
+}));
+```
+
+Tools that take no arguments should declare `inputSchema: {}` (and prompts `argsSchema: {}`) so per-element inference stays intact for the rest of the array.
 
 `MCP.Router` also accepts a `() => McpServer` factory for cases where the per-session server needs state captured in a closure (DB connections, session-scoped caches):
 
